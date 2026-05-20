@@ -1,0 +1,79 @@
+<div class="dashboard">
+  <!-- Cards de Estatísticas -->
+  <div class="stats-grid">
+    <!-- Projetos Ativos -->
+    <section class="card">
+      <div class="card-header">
+        <span class="muted">Projetos Ativos</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" aria-hidden="true">
+          <path d="M20 6H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"/><path d="M2 10h20"/>
+        </svg>
+      </div>
+      <div class="card-value">24</div>
+      <div class="positive"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 17"/><polyline points="17 6 23 6 23 12"/></svg>+12% este mês</div>
+    </section>
+
+    <!-- Prioridade Média -->
+    <section class="card">
+      <div class="card-header">
+        <span class="muted">Prioridade Média</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="card-value">8.4</div>
+      <div class="muted">Score geral</div>
+    </section>
+
+    <!-- Alertas -->
+    <section class="card">
+      <div class="card-header">
+        <span class="muted">Alertas</span>
+        <div class="alert-dot" aria-hidden="true"></div>
+      </div>
+      <div class="card-value">3</div>
+      <div class="alert-text">Requerem atenção</div>
+    </section>
+  </div>
+
+  <!-- Gráfico -->
+  <section class="card">
+    <h2 class="section-title">Evolução de Valor vs Esforço</h2>
+    <div class="chart-placeholder">
+      <p>Gráfico será renderizado com recharts</p>
+    </div>
+  </section>
+
+  <!-- Projetos Críticos e Alertas -->
+  <div class="two-column-grid">
+    <!-- Projetos Críticos -->
+    <section class="card">
+      <h2 class="section-title">Projetos Críticos</h2>
+      <div class="projects-list">
+        @for (projeto of projetosCriticos; track projeto.id) {
+          <div class="project-row">
+            <div>
+              <p class="project-name">{{ projeto.nome }}</p>
+              <p class="project-owner">{{ projeto.responsavel }}</p>
+            </div>
+            <span [class]="getPrioridadeClass(projeto.prioridade) + ' priority-badge'">
+              {{ projeto.prioridade.charAt(0).toUpperCase() + projeto.prioridade.slice(1) }}
+            </span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Alertas -->
+    <section class="card">
+      <h2 class="section-title">Alertas Recentes</h2>
+      <div class="alerts-list">
+        @for (alerta of alertas; track alerta.id) {
+          <div [class]="getAlertaClass(alerta.tipo) + ' alert-box'">
+            {{ alerta.mensagem }}
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

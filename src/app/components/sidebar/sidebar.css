@@ -1,0 +1,38 @@
+.app-sidebar {
+	width: 15rem;
+	height: 100vh;
+	background: #ffffff;
+	border-right: 1px solid #E5E7EB;
+	display: flex;
+	flex-direction: column;
+}
+.sidebar-brand {
+	padding: 1.5rem 1.5rem;
+	border-bottom: 1px solid #E5E7EB;
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+}
+.brand-icon svg { width: 2.5rem; height: 2.5rem; color: #2563EB; }
+.brand-title { font-size: 1.125rem; font-weight: 700; color: #111827 }
+.nav { flex: 1; padding: 1rem; overflow: auto }
+.menu-item {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	padding: .6rem .75rem;
+	border-radius: .5rem;
+	margin-bottom: .25rem;
+	background: transparent;
+	border: none;
+	text-align: left;
+	cursor: pointer;
+}
+.menu-item svg { width: 1.25rem; height: 1.25rem; color: currentColor }
+.menu-item:hover { background: #F8FAFC }
+.menu-item.active { background: #dbeafe; color: #1d4ed8 }
+.profile { padding: 1rem; border-top: 1px solid #E5E7EB }
+.profile-row { display:flex; gap:.75rem; align-items:center; padding:.5rem; border-radius:.5rem; color:#6B7280; }
+.profile-row:hover { background:#F8FAFC; cursor:pointer }
+.profile-label { font-size:.875rem; font-weight:500 }

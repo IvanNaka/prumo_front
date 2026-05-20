@@ -1,0 +1,28 @@
+.app-header {
+	height: 4rem;
+	background: #ffffff;
+	border-bottom: 1px solid #E5E7EB;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 2rem;
+}
+.app-title {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #111827;
+}
+.user-button {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 9999px;
+	background: #DBEAFE;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: #2563EB;
+	border: none;
+	cursor: pointer;
+	transition: background .15s ease-in-out;
+}
+.user-button:hover { background: #BFDBFE; }
