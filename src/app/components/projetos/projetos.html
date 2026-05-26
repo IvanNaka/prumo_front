@@ -1,4 +1,74 @@
-<section class="panel">
-  <h2 class="panel-title">Gerenciamento de Projetos</h2>
-  <p class="panel-muted">Lista de projetos será exibida aqui</p>
+<section class="projects-page">
+  <div class="projects-shell">
+    <header class="projects-hero">
+      <div>
+        <p class="eyebrow">Projetos</p>
+        <h1 class="page-title">Gerenciamento de projetos</h1>
+        <p class="page-description">Lista carregada diretamente do endpoint de projetos.</p>
+      </div>
+
+      <button type="button" class="cta-button" (click)="navigateToCreateProject()">Criar projeto</button>
+    </header>
+
+    <section class="projects-summary" aria-label="Resumo de projetos">
+      <div class="summary-card">
+        <span class="summary-label">Total</span>
+        <strong class="summary-value">{{ totalProjects() }}</strong>
+      </div>
+
+      <div class="summary-card summary-card-accent">
+        <span class="summary-label">Endpoint</span>
+        <strong class="summary-value">GET /Projects</strong>
+      </div>
+    </section>
+
+    @if (isLoading()) {
+      <div class="state-card" role="status" aria-live="polite">Carregando projetos...</div>
+    } @else if (loadError()) {
+      <div class="state-card state-card-error" role="alert">
+        Não foi possível carregar os projetos. Tente novamente em instantes.
+      </div>
+    } @else if (projects().length === 0) {
+      <div class="state-card" role="status" aria-live="polite">Nenhum projeto encontrado.</div>
+    } @else {
+      <div class="projects-grid">
+        @for (project of projects(); track trackByProjectId($index, project)) {
+          <article class="project-card">
+            <div class="project-card-header">
+              <div>
+                <p class="project-card-label">Projeto</p>
+                <h2>{{ project.name || 'Sem nome' }}</h2>
+              </div>
+
+              @if (project.status !== undefined && project.status !== null) {
+                <span class="project-status">Status {{ project.status }}</span>
+              }
+            </div>
+
+            <p class="project-description">
+              {{ project.description || 'Sem descrição informada.' }}
+            </p>
+
+            <dl class="project-meta">
+              <div>
+                <dt>Portfolio</dt>
+                <dd>{{ project.portfolioId || 'Não informado' }}</dd>
+              </div>
+
+              <div>
+                <dt>Responsável</dt>
+                <dd>{{ project.ownerId || 'Não informado' }}</dd>
+              </div>
+
+              <div>
+                <dt>ID</dt>
+                <dd>{{ project.id || 'Sem identificador' }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+    }
+
+  </div>
 </section>

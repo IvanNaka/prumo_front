@@ -1,9 +1,24 @@
 <header class="app-header">
   <h1 class="app-title">{{ title() }}</h1>
 
-  <button class="user-button" aria-label="User menu">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-    </svg>
-  </button>
+  <div class="user-menu">
+    <button
+      class="user-button"
+      type="button"
+      aria-label="User menu"
+      [attr.aria-expanded]="showUserMenu()"
+      aria-haspopup="menu"
+      (click)="toggleUserMenu()"
+    >
+      <img src="\assets\icons\user_icon.svg" alt="Ícone do usuário" class="user-icon" width="20" height="20">
+    </button>
+
+    @if (showUserMenu()) {
+      <div class="user-menu-panel" role="menu">
+        <button type="button" class="user-menu-item" role="menuitem" (click)="logout()">
+          Sair
+        </button>
+      </div>
+    }
+  </div>
 </header>

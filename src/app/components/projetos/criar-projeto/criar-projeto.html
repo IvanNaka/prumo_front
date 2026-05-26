@@ -1,0 +1,104 @@
+<section class="projects-page">
+  <div class="projects-shell">
+    <header class="projects-hero">
+      <h1 class="page-title">Novo projeto</h1>
+    </header>
+
+    <div class="projects-layout">
+      <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="project-form" novalidate>
+        
+
+        <div class="field field-full">
+          <label for="name" class="field-label">Name</label>
+          <input id="name" type="text" formControlName="name" class="field-input" placeholder="Nome do projeto" />
+          @if (controls.name.invalid && (controls.name.touched || submitted())) {
+            <p class="field-error">Informe um nome com pelo menos 3 caracteres.</p>
+          }
+        </div>
+
+        <div class="field field-full">
+          <label for="description" class="field-label">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="field-input field-textarea"
+            rows="5"
+            placeholder="Descreva o objetivo, escopo e contexto do projeto"
+          ></textarea>
+          @if (controls.description.invalid && (controls.description.touched || submitted())) {
+            <p class="field-error">A descrição deve ter pelo menos 10 caracteres.</p>
+          }
+        </div>
+
+        <div class="field field-full">
+          <label for="portfolioId" class="field-label">Portfolio</label>
+          <select id="portfolioId" formControlName="portfolioId" class="field-input">
+            <option value="" disabled selected>Selecione um portfolio</option>
+            @for (portfolio of portfolios(); track portfolio.id) {
+              <option [value]="portfolio.id">{{ portfolio.name || 'Sem nome' }}</option>
+            }
+          </select>
+          @if (controls.portfolioId.invalid && (controls.portfolioId.touched || submitted())) {
+            <p class="field-error">Selecione um portfolio para continuar.</p>
+          }
+        </div>
+
+        @if (priorityCriteria().length > 0) {
+          <div class="field field-full">
+            <p class="field-label">Critérios de prioridade</p>
+            <p class="page-description">
+              Preencha os dados do projeto e avalie os principais critérios de prioridade com notas de 1 a 10.
+            </p>
+            <div class="priority-criteria-list">
+              @for (criteria of priorityCriteria(); track criteria.id) {
+                <div class="priority-criteria-item">
+                  <label class="field-label" [for]="getCriteriaControlName(criteria.id)">
+                    {{ criteria.name || 'Sem nome' }}
+                  </label>
+
+                  <input
+                    [id]="getCriteriaControlName(criteria.id)"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="1"
+                    class="field-input priority-criteria-input"
+                    [value]="getCriteriaValue(criteria.id)"
+                    (input)="onCriteriaValueInput(criteria.id, $any($event.target).value)"
+                    [attr.aria-label]="criteria.name || 'Critério de prioridade'"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+        } @else if (controls.portfolioId.value) {
+          <div class="field field-full">
+            <p class="field-label">Critérios de prioridade</p>
+            <p class="field-helper">Nenhum critério de prioridade encontrado para este portfolio.</p>
+          </div>
+        }
+
+        <div class="scores-grid">
+          <!-- Campos de score aqui -->
+        </div>
+
+        <button type="submit" class="submit-button">Salvar projeto</button>
+      </form>
+
+      <aside class="summary-card" aria-label="Resumo do projeto">
+        <p class="summary-label">Resumo rápido</p>
+        <div class="summary-score">
+          <span class="summary-score-value">{{ scoreAverage() }}</span>
+          <span class="summary-score-caption">média dos scores</span>
+        </div>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <span class="summary-item-label">Value</span>
+            <strong>{{ 1 }}</strong>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,3 +1,235 @@
-.panel { background:#fff; border:1px solid #E5E7EB; border-radius:.5rem; padding:1.5rem; box-shadow: 0 1px 2px rgba(16,24,40,0.04); }
-.panel-title { font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:1rem }
-.panel-muted { color:#6B7280 }
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.projects-page {
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  background:
+    radial-gradient(circle at top left, rgb(59 130 246 / 0.18), transparent 32%),
+    radial-gradient(circle at right 15%, rgb(15 23 42 / 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+.projects-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.projects-hero {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.page-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(2rem, 3vw, 3.25rem);
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.page-description {
+  max-width: 48rem;
+  margin: 0.75rem 0 0;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.cta-button {
+  border: 0;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  padding: 0.95rem 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgb(37 99 235 / 0.28);
+}
+
+
+
+.cta-button:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.projects-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card,
+.state-card,
+.project-card {
+  background: rgb(255 255 255 / 0.84);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.08);
+}
+
+.summary-card {
+  padding: 1.15rem 1.25rem;
+}
+
+.summary-card-accent {
+  background: linear-gradient(135deg, rgb(15 23 42 / 0.96) 0%, rgb(30 64 175 / 0.94) 100%);
+  color: #ffffff;
+}
+
+.summary-card-accent .summary-label,
+.summary-card-accent .summary-value {
+  color: #ffffff;
+}
+
+.summary-label,
+.project-card-label {
+  display: block;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.summary-value {
+  color: #0f172a;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.state-card {
+  padding: 1.15rem 1.25rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.state-card-error {
+  color: #b91c1c;
+  border-color: rgb(239 68 68 / 0.28);
+  background: rgb(254 242 242 / 0.92);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.project-card {
+  padding: 1.5rem;
+}
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.project-card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.project-status {
+  flex: none;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: rgb(219 234 254 / 0.9);
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.project-description {
+  margin: 0 0 1rem;
+  color: #0f172a;
+  line-height: 1.7;
+}
+
+.project-meta {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.project-meta dt {
+  margin-bottom: 0.25rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.project-meta dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .projects-hero {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .projects-summary,
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .projects-page {
+    padding: 1rem;
+  }
+
+  .project-card,
+  .summary-card,
+  .state-card {
+    padding: 1rem;
+    border-radius: 1.25rem;
+  }
+
+  .project-card-header {
+    flex-direction: column;
+  }
+}

@@ -16,29 +16,25 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           @switch (item.icon) {
             @case ('home') {
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              <image href="assets/icons/graphics-scale-svgrepo-com.svg" width="25" height="25"></image>
+            }
+            @case ('portfolio') {
+              <image href="assets/icons/briefcase.png" width="22" height="25"></image>
             }
             @case ('folder-open') {
-              <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"></path>
+              <image href="assets/icons/folder-svgrepo-com.svg" width="25" height="25"></image>
             }
             @case ('target') {
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="6"></circle>
-              <circle cx="12" cy="12" r="2"></circle>
+              <image href="assets/icons/folder-svgrepo-com.svg" width="25" height="25"></image>
             }
             @case ('link') {
-              <path d="m10 13-4 4m0 0l-4-4m3.64-4.64a9 9 0 1 0 12.73 0m0 0l-3.64 3.64m0 0l3.64 3.64"></path>
+              <image href="assets/icons/folder-svgrepo-com.svg" width="25" height="25"></image>
             }
             @case ('bar-chart-3') {
-              <path d="M3 3v18h18"></path>
-              <rect x="7" y="10" width="4" height="11"></rect>
-              <rect x="15" y="4" width="4" height="17"></rect>
-              <rect x="11" y="7" width="4" height="14"></rect>
+              <image href="assets/icons/folder-svgrepo-com.svg" width="25" height="25"></image>
             }
             @case ('settings') {
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M12 1v6m0 6v6m4.22-13.22l-4.24 4.24m-6 6l-4.24 4.24M20.22 4.22l-4.24 4.24m-6 6l-4.24 4.24M20.22 19.78l-4.24-4.24m-6-6l-4.24-4.24M3.78 19.78l4.24-4.24m6-6l4.24-4.24"></path>
+              <image href="assets/icons/folder-svgrepo-com.svg" width="25" height="25"></image>
             }
           }
         </svg>
@@ -46,13 +42,4 @@
       </button>
     }
   </nav>
-
-  <div class="profile">
-    <div class="profile-row" role="button" tabindex="0">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-      </svg>
-      <span class="profile-label">Perfil</span>
-    </div>
-  </div>
 </aside>
