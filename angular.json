@@ -60,6 +60,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+              "allowedHosts": ["prumo-front.onrender.com"]
+            },
           "configurations": {
             "production": {
               "buildTarget": "prumo:build:production"
