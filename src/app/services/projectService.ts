@@ -7,10 +7,13 @@ import { environment } from '../../environments/environment';
 export interface Project {
 	id?: string;
 	portfolioId?: string;
+	portfolioName?: string;
 	name?: string | null;
 	description?: string | null;
 	status?: number;
 	ownerId?: string;
+	ownerName?: string;
+	projectEvaluations?: ProjectEvaluationsDTO[];
 }
 export interface CreateProjectDto {
 	name?: string | null;
@@ -22,6 +25,11 @@ export interface CreateProjectDto {
 export interface CreateProjectEvaluationDto {
 	Value: number;
 	PortfolioMetricId: string;
+}
+export interface ProjectEvaluationsDTO {
+	id: string;
+	priorityCriteriaName: string;
+	value: number;	
 }
 
 @Injectable({

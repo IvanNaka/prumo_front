@@ -1,0 +1,301 @@
+<section class="dashboard" aria-label="Dashboard de portfólio com dados mockados">
+  <header class="dashboard-header">
+    <h1>Dashboard</h1>
+  </header>
+
+  <section class="panel filters-panel" aria-labelledby="filtros-globais">
+    <div class="panel-title-row">
+      <h2 id="filtros-globais">Filtros</h2>
+    </div>
+
+    <div class="filters-grid">
+
+      <article class="filter-card">
+        <p class="filter-label">Período - Ano</p>
+        <label class="select-shell">
+          <span class="sr-only">Selecione o ano</span>
+          <select
+            class="filter-select"
+            [value]="selectedYear()"
+            (change)="setYearValue(yearSelect.value)"
+            #yearSelect
+          >
+            @for (option of yearOptions(); track option.label) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+      </article>
+
+      <article class="filter-card">
+        <p class="filter-label">Período - Trimestre</p>
+        <label class="select-shell">
+          <span class="sr-only">Selecione o trimestre</span>
+          <select
+            class="filter-select"
+            [value]="selectedQuarter()"
+            (change)="setQuarterValue(quarterSelect.value)"
+            #quarterSelect
+          >
+            @for (option of quarterOptions(); track option.label) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="indicadores-executivos">
+
+    <div class="grid cols-3">
+      <article class="metric-card health">
+        <h3>Saúde do Portfólio</h3>
+
+        <div class="donut-layout">
+          <svg viewBox="0 0 120 120" class="donut" role="img" aria-label="Saúde do portfólio por status">
+            <circle class="donut-base" cx="60" cy="60" r="45"></circle>
+            @for (item of healthStatus(); track item.label; let i = $index) {
+              @if (item.label === 'Crítico') {
+                <g
+                  class="donut-action"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="'Abrir detalhamento de projetos críticos'"
+                  (click)="openCriticalDrilldown()"
+                  (keydown.enter)="openCriticalDrilldown()"
+                  (keydown.space)="openCriticalDrilldown()"
+                >
+                  <circle
+                    class="donut-segment"
+                    cx="60"
+                    cy="60"
+                    r="45"
+                    [attr.stroke]="item.color"
+                    [attr.stroke-dasharray]="getDonutStrokeDasharray(item.value)"
+                    [attr.stroke-dashoffset]="getDonutOffset(i)"
+                  ></circle>
+                </g>
+              } @else {
+                <circle
+                  class="donut-segment"
+                  cx="60"
+                  cy="60"
+                  r="45"
+                  [attr.stroke]="item.color"
+                  [attr.stroke-dasharray]="getDonutStrokeDasharray(item.value)"
+                  [attr.stroke-dashoffset]="getDonutOffset(i)"
+                ></circle>
+              }
+            }
+            <text x="60" y="58" class="donut-number">{{ portfolioTotal() }}</text>
+            <text x="60" y="72" class="donut-label">Projetos</text>
+          </svg>
+
+          <ul class="legend" aria-label="Legenda de saúde do portfólio">
+            @for (item of healthStatus(); track item.label) {
+              <li>
+                <span class="legend-dot" [style.background]="item.color" aria-hidden="true"></span>
+                <div>
+                  <strong>{{ item.label }}</strong>
+                  <p>{{ item.value }} projetos</p>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </article>
+
+      <article class="metric-card burn-rate">
+        <h3>Consumo de Orçamento (Burn Rate)</h3>
+
+        <div class="budget-bar" role="img" aria-label="Comparação entre orçamento gasto e progresso dos projetos">
+          <div class="budget-track">
+            <div
+              class="budget-spent"
+              [style.width.%]="burnRate().budgetUsedPercent"
+              aria-label="Orçamento gasto"
+            ></div>
+            <div
+              class="budget-complete"
+              [style.width.%]="burnRate().completionPercent"
+              aria-label="Conclusão dos projetos"
+            ></div>
+          </div>
+          <div class="budget-labels">
+            <span>Gasto: {{ burnRate().budgetUsedPercent }}%</span>
+            <span>Concluído: {{ burnRate().completionPercent }}%</span>
+          </div>
+        </div>
+
+        <p class="value-inline">
+          {{ formatCurrency(burnRate().budgetSpent) }} de
+          {{ formatCurrency(burnRate().budgetTotal) }}
+        </p>
+      </article>
+
+      <article class="metric-card roi">
+        <h3>VPL / Retorno Realizado</h3>
+        <div class="big-number-grid">
+          <div>
+            <p class="label">Prometido</p>
+            <strong>{{ formatCurrency(realizedReturn().promised) }}</strong>
+          </div>
+          <div>
+            <p class="label">Realizado</p>
+            <strong>{{ formatCurrency(realizedReturn().realized) }}</strong>
+          </div>
+        </div>
+
+        <p class="trend" [class.positive]="realizedReturn().ratioPercent >= 20">
+          {{ realizedReturn().ratioPercent }}% do retorno prometido capturado
+        </p>
+        <p class="value-inline">Entrega acumulada: {{ realizedReturn().ratioPercent }}% do valor prometido</p>
+      </article>
+    </div>
+  </section>
+
+  @if (drilldownOpen()) {
+    <section class="panel drilldown-panel" aria-labelledby="drilldown-projetos-criticos">
+      <div class="panel-title-row">
+        <h2 id="drilldown-projetos-criticos">Projetos críticos em detalhe</h2>
+        <button type="button" class="link-button" (click)="closeDrilldown()">Fechar detalhamento</button>
+      </div>
+
+      <p class="drilldown-intro">
+        Exibindo apenas os projetos críticos dentro dos filtros atuais. Total de registros:
+        {{ criticalProjects().length }}.
+      </p>
+
+      @if (criticalProjects().length) {
+        <div class="table-wrap">
+          <table class="drilldown-table">
+            <thead>
+              <tr>
+                <th>Projeto</th>
+                <th>Gerente responsável</th>
+                <th>Motivo do atraso</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (project of criticalProjects(); track project.project) {
+                <tr>
+                  <td>{{ project.project }}</td>
+                  <td>{{ project.manager }}</td>
+                  <td>{{ project.delayReason }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-state">Nenhum projeto crítico encontrado para os filtros selecionados.</p>
+      }
+    </section>
+  }
+
+  <section class="panel" aria-labelledby="indicadores-estrategicos">
+    <div class="grid cols-2">
+      <article class="metric-card strategy">
+        <h3>Alocação Estratégica (Run / Grow / Transform)</h3>
+
+        <div class="allocation-layout">
+          <div class="allocation-pie" [style.background]="strategicGradient()" aria-hidden="true"></div>
+
+          <ul class="legend compact">
+            @for (bucket of strategicAllocation(); track bucket.name) {
+              <li>
+                <span class="legend-dot" [style.background]="bucket.color" aria-hidden="true"></span>
+                <div>
+                  <strong>{{ bucket.name }}</strong>
+                  <p>{{ bucket.value | number:'1.0-0' }} de investimento</p>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </article>
+
+      <article class="metric-card okr">
+        <h3>Alinhamento a OKRs / Metas</h3>
+
+        <ul class="treemap" aria-label="Investimento por objetivo estratégico">
+          @for (objective of okrInvestments(); track objective.objective) {
+            <li
+              class="treemap-item"
+              [style.background]="objective.color"
+              [style.flex-grow]="objective.value"
+              [style.min-width.%]="(objective.value / maxOkrValue()) * 28"
+            >
+              <span>{{ objective.objective }}</span>
+              <strong>{{ formatCurrency(objective.value) }}</strong>
+            </li>
+          }
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="indicadores-operacionais">
+    <div class="grid cols-3 operational-grid">
+      <article class="metric-card utilization">
+        <h3>Capacidade e Ocupação (Resource Utilization)</h3>
+        <ul class="heatmap" aria-label="Mapa de calor de alocação por squad">
+          @for (item of utilization(); track item.team) {
+            <li>
+              <div class="heatmap-head">
+                <strong>{{ item.team }}</strong>
+                <span>{{ item.allocation }}%</span>
+              </div>
+              <div class="heat-track">
+                <div
+                  class="heat-fill"
+                  [style.width.%]="teamBarHeight(item.allocation)"
+                  [style.background]="utilizationColor(item.allocation)"
+                ></div>
+              </div>
+              <p class="heat-label">{{ utilizationLabel(item.allocation) }}</p>
+            </li>
+          }
+        </ul>
+      </article>
+
+      <article class="metric-card quality">
+        <h3>Qualidade da Entrega (Bugs vs. Features)</h3>
+
+        <div class="line-chart" role="img" aria-label="Proporção mensal de esforço em bugs e features">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polyline [attr.points]="effortPoints('features')" class="line features"></polyline>
+            <polyline [attr.points]="effortPoints('bugs')" class="line bugs"></polyline>
+          </svg>
+        </div>
+
+        <ul class="legend compact two-up">
+          <li>
+            <span class="legend-dot" style="background: #0f766e" aria-hidden="true"></span>
+            <div><strong>Features</strong><p>Valor novo</p></div>
+          </li>
+          <li>
+            <span class="legend-dot" style="background: #b91c1c" aria-hidden="true"></span>
+            <div><strong>Bugs</strong><p>Dívida técnica</p></div>
+          </li>
+        </ul>
+      </article>
+
+      <article class="metric-card lead-time">
+        <h3>Velocidade de Entrega (Lead Time)</h3>
+
+        <div class="bars" role="img" aria-label="Lead time médio mensal em dias">
+          @for (item of leadTime(); track item.month) {
+            <div class="bar-col">
+              <div class="bar" [style.height.%]="barHeight(item.days)">
+                <span>{{ item.days }}d</span>
+              </div>
+              <p>{{ item.month }}</p>
+            </div>
+          }
+        </div>
+      </article>
+    </div>
+  </section>
+</section>

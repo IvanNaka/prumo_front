@@ -137,7 +137,6 @@
   padding: 0.9rem 1rem;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  margin-bottom: 1rem;
 }
 
 .field-input:focus {
@@ -167,11 +166,10 @@
 .primary-button,
 .secondary-button {
   border: 0;
-  border-radius: 0.75rem;
+  border-radius: 5px;
   padding: 0.9rem 1rem;
   font-weight: 800;
   cursor: pointer;
-  margin-bottom: 1rem;
 }
 
 .primary-button {
@@ -220,7 +218,7 @@
 
 .add-form-button {
   border: 0;
-  border-radius: 999px;
+  border-radius: 5px;
   padding: 0.45rem 0.85rem;
   background: #1d4ed8;
   color: #ffffff;
@@ -246,6 +244,50 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: nowrap;
+  height: 40px; /* ensure header action container matches buttons */
+}
+
+/* Keep action button text on a single line in the priority section */
+.priority-header-actions button,
+.criteria-actions button {
+  white-space: nowrap;
+}
+
+/* Make priority and criteria action buttons share the same height */
+.priority-header-actions button,
+.criteria-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  height: 40px;
+  min-height: 40px;
+  line-height: 1;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+/* Keep the details card header title on a single line and align actions */
+.details-card .card-header {
+  align-items: center;
+  min-height: 40px; /* ensure consistent header height */
+}
+
+.details-card .card-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 1rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0; /* vertical padding to visually center with buttons */
+}
+
+/* Ensure action buttons align with input height in criteria items */
+.criteria-actions {
+  align-items: center;
 }
 
 .portfolio-list,

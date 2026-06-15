@@ -6,10 +6,7 @@
 .projects-page {
   min-height: 100vh;
   padding: 2rem 1rem 3rem;
-  background:
-    radial-gradient(circle at top left, rgb(59 130 246 / 0.18), transparent 32%),
-    radial-gradient(circle at right 15%, rgb(15 23 42 / 0.08), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+
 }
 
 .projects-shell {
@@ -54,14 +51,13 @@
 .cta-button {
   border: 0;
   border-radius: 0.5rem;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  background: #2563eb;
   color: #ffffff;
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.5rem;
   padding: 0.95rem 1.1rem;
   cursor: pointer;
-  box-shadow: 0 12px 30px rgb(37 99 235 / 0.28);
 }
 
 
@@ -92,10 +88,6 @@
   padding: 1.15rem 1.25rem;
 }
 
-.summary-card-accent {
-  background: linear-gradient(135deg, rgb(15 23 42 / 0.96) 0%, rgb(30 64 175 / 0.94) 100%);
-  color: #ffffff;
-}
 
 .summary-card-accent .summary-label,
 .summary-card-accent .summary-value {

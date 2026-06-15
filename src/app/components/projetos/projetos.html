@@ -2,25 +2,11 @@
   <div class="projects-shell">
     <header class="projects-hero">
       <div>
-        <p class="eyebrow">Projetos</p>
         <h1 class="page-title">Gerenciamento de projetos</h1>
-        <p class="page-description">Lista carregada diretamente do endpoint de projetos.</p>
       </div>
 
       <button type="button" class="cta-button" (click)="navigateToCreateProject()">Criar projeto</button>
     </header>
-
-    <section class="projects-summary" aria-label="Resumo de projetos">
-      <div class="summary-card">
-        <span class="summary-label">Total</span>
-        <strong class="summary-value">{{ totalProjects() }}</strong>
-      </div>
-
-      <div class="summary-card summary-card-accent">
-        <span class="summary-label">Endpoint</span>
-        <strong class="summary-value">GET /Projects</strong>
-      </div>
-    </section>
 
     @if (isLoading()) {
       <div class="state-card" role="status" aria-live="polite">Carregando projetos...</div>
@@ -33,36 +19,23 @@
     } @else {
       <div class="projects-grid">
         @for (project of projects(); track trackByProjectId($index, project)) {
-          <article class="project-card">
+          <article class="project-card" role="link" tabindex="0" (click)="navigateToProject(project.id)" (keyup)="($event.key === 'Enter') && navigateToProject(project.id)">
             <div class="project-card-header">
               <div>
                 <p class="project-card-label">Projeto</p>
                 <h2>{{ project.name || 'Sem nome' }}</h2>
               </div>
-
-              @if (project.status !== undefined && project.status !== null) {
-                <span class="project-status">Status {{ project.status }}</span>
-              }
             </div>
-
-            <p class="project-description">
-              {{ project.description || 'Sem descrição informada.' }}
-            </p>
 
             <dl class="project-meta">
               <div>
                 <dt>Portfolio</dt>
-                <dd>{{ project.portfolioId || 'Não informado' }}</dd>
+                <dd>{{ project.portfolioName || 'Não informado' }}</dd>
               </div>
 
               <div>
                 <dt>Responsável</dt>
-                <dd>{{ project.ownerId || 'Não informado' }}</dd>
-              </div>
-
-              <div>
-                <dt>ID</dt>
-                <dd>{{ project.id || 'Sem identificador' }}</dd>
+                <dd>{{ project.ownerName || 'Não informado' }}</dd>
               </div>
             </dl>
           </article>

@@ -78,9 +78,6 @@
           </div>
         }
 
-        <div class="scores-grid">
-          <!-- Campos de score aqui -->
-        </div>
 
         <button type="submit" class="submit-button">Salvar projeto</button>
       </form>
@@ -92,12 +89,23 @@
           <span class="summary-score-caption">média dos scores</span>
         </div>
 
-        <div class="summary-list">
-          <div class="summary-item">
-            <span class="summary-item-label">Value</span>
-            <strong>{{ 1 }}</strong>
+        @if (summaryCriteriaCount() > 0) {
+          <div class="summary-list">
+            @for (criteria of summaryCriteria(); track criteria.id) {
+              <div class="summary-item">
+                <span class="summary-item-label">{{ criteria.name }}</span>
+                <strong>{{ criteria.value }}</strong>
+              </div>
+            }
           </div>
-        </div>
+        } @else {
+          <div class="summary-list">
+            <div class="summary-item">
+              <span class="summary-item-label">Critérios de prioridade</span>
+              <strong>Selecione um portfolio</strong>
+            </div>
+          </div>
+        }
       </aside>
     </div>
   </div>

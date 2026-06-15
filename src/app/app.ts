@@ -28,6 +28,7 @@ export class App {
     dashboard: 'Dashboard',
     portfolios: 'Portfolios',
     projetos: 'Projetos',
+    dependencias: 'Dependências',
     okrs: 'OKRs',
     integracoes: 'Integrações',
     relatorios: 'Relatórios',

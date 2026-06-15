@@ -29,7 +29,6 @@ export class CriarProjeto {
     portfolioId: ['', [Validators.required]],
     name: ['', [Validators.required, Validators.minLength(3)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
-    // removed unused control that blocked form submission
   });
 
   readonly projectValues = toSignal(
@@ -43,8 +42,34 @@ export class CriarProjeto {
   );
 
   readonly scoreAverage = computed(() => {
-    const {  } = this.projectValues();
-    return Math.round((1) / 5);
+    const criteria = this.priorityCriteria();
+
+    if (!criteria.length) {
+      return 0;
+    }
+
+    const weightedTotal = criteria.reduce(
+      (sum, item) => sum + this.getCriteriaValue(item.id) * item.valueWeight,
+      0
+    );
+    const totalWeight = criteria.reduce((sum, item) => sum + item.valueWeight, 0);
+
+    return totalWeight === 0 ? 0 : Math.round(weightedTotal / totalWeight);
+  });
+
+  readonly summaryCriteria = computed(() =>
+    this.priorityCriteria().map((criteria) => ({
+      id: criteria.id,
+      name: criteria.name || 'Sem nome',
+      value: this.getCriteriaValue(criteria.id),
+    }))
+  );
+
+  readonly summaryCriteriaCount = computed(() => this.summaryCriteria().length);
+
+  readonly highestCriteriaScore = computed(() => {
+    const values = this.summaryCriteria().map((item) => item.value);
+    return values.length ? Math.max(...values) : 0;
   });
 
   constructor() {
@@ -99,6 +124,7 @@ export class CriarProjeto {
   getCriteriaValue(criteriaId: string): number {
     return this.priorityCriteriaValues()[criteriaId] ?? 0;
   }
+  
 
   onCriteriaValueInput(criteriaId: string, rawValue: string | number): void {
     const value = Number(rawValue);

@@ -28,6 +28,11 @@ export class Projetos {
     void this.router.navigate(['/projetos/novo']);
   }
 
+  navigateToProject(projectId?: string) {
+    if (!projectId) return;
+    void this.router.navigate(['/projetos', projectId]);
+  }
+
   private loadProjects(): void {
     this.isLoading.set(true);
     this.loadError.set(false);

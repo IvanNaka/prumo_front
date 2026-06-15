@@ -34,6 +34,29 @@ export class AuthService {
 		return localStorage.getItem(this.tokenKey);
 	}
 
+	getUserId(): string | null {
+		const token = this.getToken();
+
+		if (!token) {
+			return null;
+		}
+
+		const payload = this.decodeTokenPayload(token);
+
+		if (!payload) {
+			return null;
+		}
+
+		return this.readClaim(payload, [
+			'userId',
+			'sub',
+			'nameid',
+			'uid',
+			'oid',
+			'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier',
+		]);
+	}
+
 	hasToken(): boolean {
 		return this.getToken() !== null;
 	}
@@ -41,6 +64,41 @@ export class AuthService {
 	clearToken(): void {
 		localStorage.removeItem(this.tokenKey);
 		localStorage.removeItem(this.legacyTokenKey);
+	}
+
+	private decodeTokenPayload(token: string): Record<string, unknown> | null {
+		const segments = token.split('.');
+
+		if (segments.length < 2) {
+			return null;
+		}
+
+		try {
+			const payload = segments[1].replace(/-/g, '+').replace(/_/g, '/');
+			const paddedPayload = payload.padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+			const decodedPayload = globalThis.atob(paddedPayload);
+			const parsedPayload = JSON.parse(decodedPayload) as unknown;
+
+			if (typeof parsedPayload !== 'object' || parsedPayload === null) {
+				return null;
+			}
+
+			return parsedPayload as Record<string, unknown>;
+		} catch {
+			return null;
+		}
+	}
+
+	private readClaim(payload: Record<string, unknown>, claimNames: string[]): string | null {
+		for (const claimName of claimNames) {
+			const value = payload[claimName];
+
+			if (typeof value === 'string' && value.trim().length > 0) {
+				return value;
+			}
+		}
+
+		return null;
 	}
 
 	private extractToken(response: AuthTokenResponse | string): string {
