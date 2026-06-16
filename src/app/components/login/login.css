@@ -61,6 +61,19 @@
   gap: 1.25rem;
 }
 
+.google-signin-slot {
+  display: flex;
+  justify-content: center;
+  min-height: 48px;
+}
+
+.field-error {
+  margin: 0.5rem 0 0;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
 .field {
   display: grid;
   gap: 0.5rem;

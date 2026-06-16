@@ -1,5 +1,8 @@
 @if (!isLoggedIn()) {
-  <app-login (onLogin)="handleLogin()"></app-login>
+  @if (authError()) {
+    <div class="auth-error-banner">{{ authError() }}</div>
+  }
+  <app-login (onLogin)="handleLogin($event)"></app-login>
 } @else {
   <div class="app-shell">
     <app-sidebar [activeItem]="activeView()" (onNavigate)="handleNavigate($event)"></app-sidebar>

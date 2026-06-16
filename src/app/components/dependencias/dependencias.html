@@ -1,0 +1,163 @@
+<section class="dependencies-page">
+	<div class="dependencies-shell">
+		<header class="dependencies-hero">
+			<div class="hero-copy">
+				<h1 class="page-title">Gerenciamento de dependências</h1>
+			</div>
+		</header>
+
+		@if (feedback()) {
+			<div
+				class="state-card"
+				[class.state-card-success]="feedback()?.kind === 'success'"
+				[class.state-card-error]="feedback()?.kind === 'error'"
+				[class.state-card-info]="feedback()?.kind === 'info'"
+				role="status"
+				aria-live="polite"
+			>
+				{{ feedback()?.text }}
+			</div>
+		}
+
+		<div class="dependencies-layout">
+			<form [formGroup]="dependencyForm" (ngSubmit)="onSubmit()" class="dependency-form" novalidate>
+				<div class="field field-full">
+					<label for="portfolioId" class="field-label">Portfolio</label>
+					<select id="portfolioId" formControlName="portfolioId" class="field-input">
+						<option value="" disabled>Selecione um portfolio</option>
+						@for (portfolio of portfolios(); track trackByPortfolioId($index, portfolio)) {
+							<option [value]="portfolio.id">{{ portfolio.name || 'Sem nome' }}</option>
+						}
+					</select>
+					@if (controls.portfolioId.invalid && (controls.portfolioId.touched || submitted())) {
+						<p class="field-error">Selecione um portfolio para continuar.</p>
+					}
+				</div>
+
+				<div class="field">
+					<label for="projectId" class="field-label">Projeto principal</label>
+					<select
+						id="projectId"
+						formControlName="projectId"
+						class="field-input"
+						[disabled]="!controls.portfolioId.value || isLoadingProjects()"
+					>
+						<option value="" disabled>Selecione o projeto</option>
+						@for (project of projects(); track trackByProjectId($index, project)) {
+							<option [value]="project.id">{{ getProjectLabel(project) }}</option>
+						}
+					</select>
+					@if (controls.projectId.invalid && (controls.projectId.touched || submitted())) {
+						<p class="field-error">Selecione o projeto que depende de outro projeto.</p>
+					}
+				</div>
+
+				<div class="field">
+					<label for="dependsOnProjectId" class="field-label">Projeto dependente</label>
+					<select
+						id="dependsOnProjectId"
+						formControlName="dependsOnProjectId"
+						class="field-input"
+						[disabled]="!controls.portfolioId.value || isLoadingProjects()"
+					>
+						<option value="" disabled>Selecione a dependência</option>
+						@for (project of projects(); track trackByProjectId($index, project)) {
+							<option [value]="project.id">{{ getProjectLabel(project) }}</option>
+						}
+					</select>
+					@if (controls.dependsOnProjectId.invalid && (controls.dependsOnProjectId.touched || submitted())) {
+						<p class="field-error">Selecione o projeto do qual esta entrega depende.</p>
+					}
+				</div>
+
+				@if (dependencyForm.hasError('sameProject') && (controls.projectId.touched || controls.dependsOnProjectId.touched || submitted())) {
+					<div class="field field-full">
+						<p class="field-error">O projeto principal e o projeto dependente precisam ser diferentes.</p>
+					</div>
+				}
+
+				<div class="field field-full">
+					<label for="reason" class="field-label">Motivo</label>
+					<textarea
+						id="reason"
+						formControlName="reason"
+						class="field-input field-textarea"
+						rows="4"
+						placeholder="Explique por que esta dependência existe"
+					></textarea>
+				</div>
+
+				@if (!hasUserId) {
+					<div class="field field-full">
+						<p class="field-helper field-helper-warning">
+							Não foi possível identificar o usuário autenticado. A criação de novas dependências ficará indisponível até o token trazer o identificador do usuário.
+						</p>
+					</div>
+				}
+
+				<button type="submit" class="submit-button" [disabled]="isSaving() || !hasUserId">
+					{{ isSaving() ? 'Salvando...' : 'Salvar dependência' }}
+				</button>
+			</form>
+
+			<aside class="dependencies-panel" aria-label="Lista de dependências do portfolio">
+				<div class="panel-header">
+					<div>
+						<p class="eyebrow">Dependências registradas</p>
+						<h2 class="panel-title">Lista por portfolio</h2>
+					</div>
+				</div>
+
+				@if (!controls.portfolioId.value) {
+					<div class="state-card" role="status" aria-live="polite">Selecione um portfolio para ver as dependências.</div>
+				} @else if (isLoadingDependencies()) {
+					<div class="state-card" role="status" aria-live="polite">Carregando dependências...</div>
+				} @else if (dependencies().length === 0) {
+					<div class="state-card" role="status" aria-live="polite">Nenhuma dependência encontrada para o portfolio selecionado.</div>
+				} @else {
+					<div class="dependencies-list">
+						@for (dependency of dependencies(); track trackByDependencyId($index, dependency)) {
+							<article class="dependency-card">
+								<div class="dependency-card-header">
+									<div>
+										<p class="dependency-label">Projeto principal</p>
+										<h3>{{ dependency.projectName || dependency.projectId }}</h3>
+									</div>
+
+									<button
+										type="button"
+										class="danger-button"
+										(click)="deleteDependency(dependency)"
+										[disabled]="deletingDependencyId() === dependency.id"
+									>
+										{{ deletingDependencyId() === dependency.id ? 'Excluindo...' : 'X' }}
+									</button>
+								</div>
+
+								<p class="dependency-flow">
+									<strong>Depende de:</strong> {{ dependency.dependsOnProjectName || dependency.dependsOnProjectId }}
+								</p>
+
+								@if (dependency.reason) {
+									<p class="dependency-reason"><strong>Motivo:</strong> {{ dependency.reason }}</p>
+								}
+
+								<dl class="dependency-meta">
+									<div>
+										<dt>Portfolio</dt>
+										<dd>{{ dependency.portfolioName || 'Não informado' }}</dd>
+									</div>
+
+									<div>
+										<dt>Responsável</dt>
+										<dd>{{ dependency.userName || 'Não informado' }}</dd>
+									</div>
+								</dl>
+							</article>
+						}
+					</div>
+				}
+			</aside>
+		</div>
+	</div>
+</section>

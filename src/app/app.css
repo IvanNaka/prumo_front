@@ -9,12 +9,25 @@
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
+	margin-left: 15rem;
 }
 
 .app-main {
 	flex: 1;
 	overflow: auto;
 	padding: 2rem;
+}
+
+.auth-error-banner {
+	margin: 1rem auto 0;
+	width: min(28rem, calc(100% - 2rem));
+	padding: 0.875rem 1rem;
+	border-radius: 0.75rem;
+	background: #fef2f2;
+	color: #b91c1c;
+	border: 1px solid #fecaca;
+	font-weight: 600;
+	box-shadow: 0 10px 30px rgb(185 28 28 / 0.08);
 }
 
 @media (max-width: 960px) {

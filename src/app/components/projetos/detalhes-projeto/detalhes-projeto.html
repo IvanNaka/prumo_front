@@ -1,0 +1,64 @@
+<section class="project-details-page">
+  <div class="details-shell">
+    <header class="details-hero">
+      <button class="back-button" type="button" (click)="navigateBack()">Voltar</button>
+      <div>
+        <h1 class="page-title">Detalhes do Projeto</h1>
+      </div>
+    </header>
+
+    @if (isLoading()) {
+      <div class="state-card" role="status" aria-live="polite">Carregando projeto...</div>
+    } @else if (loadError()) {
+      <div class="state-card state-card-error" role="alert">
+        Não foi possível carregar o projeto. Verifique o ID e tente novamente.
+      </div>
+    } @else if (!project()) {
+      <div class="state-card" role="status">Projeto não encontrado.</div>
+    } @else {
+      <article class="project-details">
+        <h2 class="project-title">{{ project()?.name || 'Sem nome' }}</h2>
+        <p class="project-description">{{ project()?.description || 'Sem descrição' }}</p>
+
+        <dl class="project-meta">
+          <div>
+            <dt>Portfolio</dt>
+            <dd>{{ project()?.portfolioName || 'Não informado' }}</dd>
+          </div>
+
+          <div>
+            <dt>Responsável</dt>
+            <dd>{{ project()?.ownerName || 'Não informado' }}</dd>
+          </div>
+        </dl>
+
+        <!-- Project Evaluations -->
+        <section class="project-evaluations">
+          <h3>Avaliações do Projeto</h3>
+
+          @if (evaluations().length > 0) {
+            <table class="evaluations-table" role="table">
+              <thead>
+                <tr>
+                  <th>Critério</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ev of evaluations(); track ev.id) {
+                  <tr>
+                    <td>{{ ev.priorityCriteriaName || '-' }}</td>
+                    <td>{{ ev.value != null ? ev.value : '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <div class="state-card">Nenhuma avaliação cadastrada para este projeto.</div>
+          }
+        </section>
+      </article>
+    }
+
+  </div>
+</section>

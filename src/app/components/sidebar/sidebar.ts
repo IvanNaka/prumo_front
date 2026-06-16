@@ -20,11 +20,13 @@ export class Sidebar {
 
   menuItems: MenuItem[] = [
     { id: 'dashboard', icon: 'home', label: 'Dashboard' },
+    { id: 'portfolios', icon: 'portfolio', label: 'Portfólios' },
     { id: 'projetos', icon: 'folder-open', label: 'Projetos' },
-    { id: 'okrs', icon: 'target', label: 'OKRs' },
-    { id: 'integracoes', icon: 'link', label: 'Integrações' },
-    { id: 'relatorios', icon: 'bar-chart-3', label: 'Relatórios' },
-    { id: 'configuracoes', icon: 'settings', label: 'Configurações' },
+    { id: 'dependencias', icon: 'link', label: 'Dependências' },
+    // { id: 'okrs', icon: 'target', label: 'OKRs' },
+    // { id: 'integracoes', icon: 'link', label: 'Integrações' },
+    // { id: 'relatorios', icon: 'bar-chart-3', label: 'Relatórios' },
+    // { id: 'configuracoes', icon: 'settings', label: 'Configurações' },
   ];
 
   handleNavigate(id: string) {

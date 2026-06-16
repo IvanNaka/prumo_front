@@ -5,6 +5,7 @@
 	border-right: 1px solid #E5E7EB;
 	display: flex;
 	flex-direction: column;
+	position: fixed;
 }
 .sidebar-brand {
 	padding: 1.5rem 1.5rem;

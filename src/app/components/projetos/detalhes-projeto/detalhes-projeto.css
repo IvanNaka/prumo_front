@@ -1,0 +1,160 @@
+.project-details-page {
+	display: block;
+	min-height: 100vh;
+	padding: 2rem 1rem 3rem;
+}
+
+.details-shell {
+	width: min(1120px, 100%);
+	margin: 0 auto;
+}
+
+.details-hero {
+	margin-bottom: 1.5rem;
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	align-items: end;
+}
+
+.back-button {
+	border: 0;
+	border-radius: 0.5rem;
+	background: transparent;
+	color: #0f172a;
+	font-weight: 700;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	border: 1px solid rgb(148 163 184 / 0.18);
+}
+
+.back-button:focus-visible {
+	outline: 2px solid #1d4ed8;
+	outline-offset: 2px;
+}
+
+.eyebrow {
+	margin: 0 0 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	font-size: 0.75rem;
+	line-height: 1rem;
+	font-weight: 700;
+	color: #1d4ed8;
+}
+
+.page-title,
+.project-title {
+	margin: 0;
+	color: #0f172a;
+	font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+	line-height: 1.05;
+	font-weight: 800;
+}
+
+.project-description {
+	max-width: 48rem;
+	margin: 0.75rem 0 1rem;
+	color: #475569;
+	font-size: 1rem;
+	line-height: 1.65;
+}
+
+.project-details {
+	background: rgb(255 255 255 / 0.84);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgb(148 163 184 / 0.18);
+	border-radius: 1rem;
+	box-shadow: 0 24px 60px rgb(15 23 42 / 0.06);
+	padding: 1.5rem;
+}
+
+.project-meta {
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.85rem;
+}
+
+.project-meta dt {
+	margin-bottom: 0.25rem;
+	color: #64748b;
+	font-size: 0.78rem;
+	line-height: 1rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.project-meta dd {
+	margin: 0;
+	color: #0f172a;
+	font-size: 0.95rem;
+	line-height: 1.4;
+	font-weight: 600;
+}
+
+.project-evaluations {
+	margin-top: 1.25rem;
+}
+
+.evaluations-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: transparent;
+}
+
+.evaluations-table thead th {
+	text-align: left;
+	padding: 0.75rem 1rem;
+	font-size: 0.85rem;
+	color: #475569;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.evaluations-table tbody td {
+	padding: 0.75rem 1rem;
+	border-top: 1px solid rgb(148 163 184 / 0.10);
+	color: #0f172a;
+	font-weight: 600;
+}
+
+.state-card {
+	padding: 1.15rem 1.25rem;
+	color: #0f172a;
+	font-weight: 600;
+	background: rgb(255 255 255 / 0.9);
+	border: 1px solid rgb(148 163 184 / 0.12);
+	border-radius: 0.75rem;
+}
+
+.state-card-error {
+	color: #b91c1c;
+	border-color: rgb(239 68 68 / 0.28);
+	background: rgb(254 242 242 / 0.92);
+}
+
+@media (max-width: 960px) {
+	.details-hero {
+		flex-direction: column;
+		align-items: start;
+	}
+
+	.project-meta {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 640px) {
+	.project-details-page {
+		padding: 1rem;
+	}
+
+	.project-details,
+	.state-card {
+		padding: 1rem;
+		border-radius: 1rem;
+	}
+}

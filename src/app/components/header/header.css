@@ -1,4 +1,5 @@
 .app-header {
+	position: relative;
 	height: 4rem;
 	background: #ffffff;
 	border-bottom: 1px solid #E5E7EB;
@@ -26,3 +27,40 @@
 	transition: background .15s ease-in-out;
 }
 .user-button:hover { background: #BFDBFE; }
+
+.user-menu {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
+.user-menu-panel {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	right: 0;
+	min-width: 10rem;
+	padding: 0.35rem;
+	border: 1px solid #E5E7EB;
+	border-radius: 0.75rem;
+	background: #ffffff;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+	z-index: 20;
+}
+
+.user-menu-item {
+	width: 100%;
+	border: 0;
+	border-radius: 0.5rem;
+	background: transparent;
+	color: #111827;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	padding: 0.7rem 0.85rem;
+	cursor: pointer;
+	transition: background .15s ease-in-out;
+}
+
+.user-menu-item:hover {
+	background: #F3F4F6;
+}

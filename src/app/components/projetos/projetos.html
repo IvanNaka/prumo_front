@@ -1,4 +1,47 @@
-<section class="panel">
-  <h2 class="panel-title">Gerenciamento de Projetos</h2>
-  <p class="panel-muted">Lista de projetos será exibida aqui</p>
+<section class="projects-page">
+  <div class="projects-shell">
+    <header class="projects-hero">
+      <div>
+        <h1 class="page-title">Gerenciamento de projetos</h1>
+      </div>
+
+      <button type="button" class="cta-button" (click)="navigateToCreateProject()">Criar projeto</button>
+    </header>
+
+    @if (isLoading()) {
+      <div class="state-card" role="status" aria-live="polite">Carregando projetos...</div>
+    } @else if (loadError()) {
+      <div class="state-card state-card-error" role="alert">
+        Não foi possível carregar os projetos. Tente novamente em instantes.
+      </div>
+    } @else if (projects().length === 0) {
+      <div class="state-card" role="status" aria-live="polite">Nenhum projeto encontrado.</div>
+    } @else {
+      <div class="projects-grid">
+        @for (project of projects(); track trackByProjectId($index, project)) {
+          <article class="project-card" role="link" tabindex="0" (click)="navigateToProject(project.id)" (keyup)="($event.key === 'Enter') && navigateToProject(project.id)">
+            <div class="project-card-header">
+              <div>
+                <p class="project-card-label">Projeto</p>
+                <h2>{{ project.name || 'Sem nome' }}</h2>
+              </div>
+            </div>
+
+            <dl class="project-meta">
+              <div>
+                <dt>Portfolio</dt>
+                <dd>{{ project.portfolioName || 'Não informado' }}</dd>
+              </div>
+
+              <div>
+                <dt>Responsável</dt>
+                <dd>{{ project.ownerName || 'Não informado' }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+    }
+
+  </div>
 </section>
