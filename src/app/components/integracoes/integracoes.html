@@ -1,4 +1,182 @@
-<section class="panel">
-  <h2 class="panel-title">Integrações</h2>
-  <p class="panel-muted">Configure integrações com outras plataformas</p>
+<section class="integrations-page">
+	<div class="integrations-shell">
+		<header class="integrations-hero">
+			<h1 class="page-title">Integrações</h1>
+			<p class="page-description">Configure integrações com plataformas externas para importar issues e worklogs.</p>
+		</header>
+
+		@if (feedback()) {
+			<div
+				class="state-card"
+				[class.state-card-success]="feedback()?.kind === 'success'"
+				[class.state-card-error]="feedback()?.kind === 'error'"
+				role="status"
+				aria-live="polite"
+			>
+				{{ feedback()?.text }}
+			</div>
+		}
+
+		@if (showForm()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">{{ isEditing() ? 'Editar integração' : 'Nova integração' }}</h2>
+						<button type="button" class="secondary-button" (click)="closeForm()">Fechar</button>
+					</div>
+
+					<form [formGroup]="integrationForm" (ngSubmit)="onSubmit()" novalidate>
+						<label for="integrationType" class="field-label">Tipo</label>
+						<select id="integrationType" formControlName="type" class="field-input">
+							@for (option of integrationTypes; track option.value) {
+								<option [value]="option.value" [disabled]="!option.supported">
+									{{ option.label }}{{ option.supported ? '' : ' (em breve)' }}
+								</option>
+							}
+						</select>
+
+						<label for="integrationApiUrl" class="field-label">URL base</label>
+						<input
+							id="integrationApiUrl"
+							type="text"
+							formControlName="apiUrl"
+							class="field-input"
+							placeholder="https://minhaempresa.atlassian.net"
+						/>
+						@if (controls.apiUrl.invalid && (controls.apiUrl.touched || createSubmitted())) {
+							<p class="field-error">Informe uma URL válida, sem barra final (ex.: https://empresa.atlassian.net).</p>
+						}
+
+						<label for="integrationToken" class="field-label">Token</label>
+						<input
+							id="integrationToken"
+							type="text"
+							formControlName="token"
+							class="field-input"
+							placeholder="email@empresa.com:ATATT3xFfGF0..."
+						/>
+						<p class="field-helper">
+							Formato: <strong>e-mail_da_conta_jira:api_token</strong>. Gere o API token em
+							<em>id.atlassian.com/manage-profile/security/api-tokens</em> e concatene com o e-mail usando ":".
+							@if (isEditing()) {
+								Deixe em branco para manter o token atual.
+							}
+						</p>
+						@if (controls.token.invalid && (controls.token.touched || createSubmitted())) {
+							<p class="field-error">Informe o token no formato email:api_token.</p>
+						}
+
+						<label for="integrationInterval" class="field-label">Intervalo de sincronização (minutos)</label>
+						<input
+							id="integrationInterval"
+							type="number"
+							min="1"
+							formControlName="syncIntervalMinutes"
+							class="field-input"
+						/>
+						@if (controls.syncIntervalMinutes.invalid && (controls.syncIntervalMinutes.touched || createSubmitted())) {
+							<p class="field-error">Informe um intervalo maior que zero.</p>
+						}
+
+						@if (isEditing()) {
+							<label class="field-label checkbox-label">
+								<input type="checkbox" formControlName="isActive" />
+								Integração ativa
+							</label>
+						}
+
+						<button type="submit" class="primary-button full-width" [disabled]="isSaving()">
+							{{ isSaving() ? 'Salvando...' : (isEditing() ? 'Salvar alterações' : 'Configurar integração') }}
+						</button>
+					</form>
+				</article>
+			</div>
+		}
+
+		@if (pendingDeleteIntegration()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">Confirmar exclusão</h2>
+					</div>
+
+					<div class="modal-content">
+						<p>
+							Deseja realmente excluir a integração
+							<strong>{{ getTypeLabel(pendingDeleteIntegration()!.type) }}</strong>?
+						</p>
+						<div class="actions-row">
+							<button
+								type="button"
+								class="primary-button"
+								[disabled]="deletingId() === pendingDeleteIntegration()!.id"
+								(click)="confirmDelete()"
+							>
+								Excluir
+							</button>
+							<button type="button" class="secondary-button" (click)="cancelDelete()">Cancelar</button>
+						</div>
+					</div>
+				</article>
+			</div>
+		}
+
+		<section class="list-card">
+			<div class="card-header">
+				<h2 class="card-title">Integrações configuradas</h2>
+				<button type="button" class="add-form-button" (click)="openCreateForm()">Adicionar Integração</button>
+			</div>
+
+			@if (isLoading()) {
+				<p class="empty-state">Carregando integrações...</p>
+			} @else {
+				<div class="integration-list">
+					@for (integration of integrations(); track trackByIntegrationId($index, integration)) {
+						<article class="integration-item">
+							<div class="integration-main">
+								<div class="integration-title-row">
+									<p class="integration-name">{{ getTypeLabel(integration.type) }}</p>
+									<span
+										class="status-badge"
+										[class.status-success]="integration.lastSyncStatus === 'Success'"
+										[class.status-error]="integration.lastSyncStatus === 'AuthenticationFailed'"
+										[class.status-warning]="integration.lastSyncStatus === 'Unavailable'"
+									>
+										{{ getStatusLabel(integration.lastSyncStatus) }}
+									</span>
+									@if (!integration.isActive) {
+										<span class="status-badge status-inactive">Inativa</span>
+									}
+								</div>
+								<p class="integration-meta">{{ integration.apiUrl }}</p>
+								<p class="integration-meta">
+									Intervalo: {{ integration.syncIntervalMinutes }} min · Última sincronização:
+									{{ formatDate(integration.lastSyncedAt) }}
+								</p>
+							</div>
+
+							<div class="integration-actions">
+								<button
+									type="button"
+									class="secondary-button"
+									[disabled]="isSyncingId() === integration.id"
+									(click)="syncIntegration(integration)"
+								>
+									{{ isSyncingId() === integration.id ? 'Sincronizando...' : 'Sincronizar' }}
+								</button>
+								<button type="button" class="secondary-button" (click)="openEditForm(integration)">Editar</button>
+								<button type="button" class="danger-button" (click)="requestDelete(integration)">Excluir</button>
+							</div>
+						</article>
+					}
+
+					@if (integrations().length === 0) {
+						<p class="empty-state">Nenhuma integração configurada.</p>
+					}
+				</div>
+			}
+		</section>
+	</div>
 </section>

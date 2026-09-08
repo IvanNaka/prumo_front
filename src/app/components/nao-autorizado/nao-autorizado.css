@@ -1,0 +1,58 @@
+:host {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.unauthorized-page {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 2rem 1rem;
+}
+
+.unauthorized-card {
+	max-width: 32rem;
+	width: 100%;
+	text-align: center;
+	background: rgb(255 255 255 / 0.84);
+	backdrop-filter: blur(16px);
+	border: 1px solid rgb(148 163 184 / 0.22);
+	border-radius: 1.25rem;
+	box-shadow: 0 24px 60px rgb(15 23 42 / 0.08);
+	padding: 2.5rem 2rem;
+}
+
+.unauthorized-code {
+	margin: 0 0 0.5rem;
+	color: #b91c1c;
+	font-size: 3rem;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.unauthorized-title {
+	margin: 0 0 0.75rem;
+	color: #0f172a;
+	font-size: 1.5rem;
+	font-weight: 800;
+}
+
+.unauthorized-description {
+	margin: 0 0 1.5rem;
+	color: #475569;
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+.primary-button {
+	border: 0;
+	border-radius: 5px;
+	padding: 0.9rem 1.5rem;
+	font-weight: 800;
+	cursor: pointer;
+	background: #1d4ed8;
+	color: #ffffff;
+}

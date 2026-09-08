@@ -6,7 +6,7 @@
   </div>
 
   <nav class="nav">
-    @for (item of menuItems; track item.id) {
+    @for (item of menuItems(); track item.id) {
       @let isActive = activeItem() === item.id;
       <button
         (click)="handleNavigate(item.id)"

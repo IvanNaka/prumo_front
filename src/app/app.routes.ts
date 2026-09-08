@@ -10,18 +10,23 @@ import { Okrs } from './components/okrs/okrs';
 import { Configuracoes } from './components/configuracoes/configuracoes';
 import { Integracoes } from './components/integracoes/integracoes';
 import { Relatorios } from './components/relatorios/relatorios';
+import { Times } from './components/times/times';
+import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
+import { teamRequiredGuard } from './guards/team-required.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
-  { path: 'dashboard', component: Dashboard },
-  { path: 'portfolios', component: Portfolios },
-  { path: 'projetos/novo', component: CriarProjeto },
-  { path: 'projetos/:id', component: DetalhesProjeto },
-  { path: 'projetos', component: Projetos },
-  { path: 'dependencias', component: Dependencias },
-  { path: 'okrs', component: Okrs },
-  { path: 'configuracoes', component: Configuracoes },
-  { path: 'integracoes', component: Integracoes },
-  { path: 'relatorios', component: Relatorios },
+  { path: 'dashboard', component: Dashboard, canActivate: [teamRequiredGuard] },
+  { path: 'portfolios', component: Portfolios, canActivate: [teamRequiredGuard] },
+  { path: 'projetos/novo', component: CriarProjeto, canActivate: [teamRequiredGuard] },
+  { path: 'projetos/:id', component: DetalhesProjeto, canActivate: [teamRequiredGuard] },
+  { path: 'projetos', component: Projetos, canActivate: [teamRequiredGuard] },
+  { path: 'dependencias', component: Dependencias, canActivate: [teamRequiredGuard] },
+  { path: 'times', component: Times },
+  { path: 'okrs', component: Okrs, canActivate: [teamRequiredGuard] },
+  { path: 'configuracoes', component: Configuracoes, canActivate: [teamRequiredGuard] },
+  { path: 'integracoes', component: Integracoes, canActivate: [teamRequiredGuard] },
+  { path: 'relatorios', component: Relatorios, canActivate: [teamRequiredGuard] },
+  { path: 'nao-autorizado', component: NaoAutorizado },
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];

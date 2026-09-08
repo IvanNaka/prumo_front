@@ -1,0 +1,266 @@
+<section class="times-page">
+	<div class="times-shell">
+		<header class="times-hero">
+			<h1 class="page-title">Gerenciamento de Times</h1>
+		</header>
+
+		@if (feedback()) {
+			<div
+				class="state-card"
+				[class.state-card-success]="feedback()?.kind === 'success'"
+				[class.state-card-error]="feedback()?.kind === 'error'"
+				role="status"
+				aria-live="polite"
+			>
+				{{ feedback()?.text }}
+			</div>
+		}
+
+		@if (showTeamForm()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">Novo time</h2>
+						<button type="button" class="secondary-button" (click)="closeTeamForm()">Fechar</button>
+					</div>
+
+					<form [formGroup]="teamForm" (ngSubmit)="onSubmitTeam()" novalidate>
+						<label for="teamPortfolio" class="field-label">Portfólio</label>
+						<select id="teamPortfolio" formControlName="portfolioId" class="field-input">
+							<option value="" disabled>Selecione um portfólio</option>
+							@for (portfolio of portfolios(); track trackByPortfolioId($index, portfolio)) {
+								<option [value]="portfolio.id">{{ portfolio.name || 'Sem nome' }}</option>
+							}
+						</select>
+						@if (teamControls.portfolioId.invalid && (teamControls.portfolioId.touched || createSubmitted())) {
+							<p class="field-error">Selecione o portfólio ao qual este time pertence.</p>
+						}
+
+						<label for="teamName" class="field-label">Nome</label>
+						<input
+							id="teamName"
+							type="text"
+							formControlName="name"
+							class="field-input"
+							placeholder="Nome do time"
+						/>
+						@if (teamControls.name.invalid && (teamControls.name.touched || createSubmitted())) {
+							<p class="field-error">Informe um nome com pelo menos 3 caracteres.</p>
+						}
+
+						<label for="teamOwner" class="field-label">Dono do time</label>
+						<select id="teamOwner" formControlName="ownerUserId" class="field-input">
+							<option value="">Sem dono definido</option>
+							@for (user of users(); track trackByUserId($index, user)) {
+								<option [value]="user.id">{{ user.name || user.email || 'Sem nome' }}</option>
+							}
+						</select>
+
+						<button type="submit" class="primary-button full-width" [disabled]="isSaving()">
+							{{ isSaving() ? 'Criando...' : 'Criar time' }}
+						</button>
+					</form>
+				</article>
+			</div>
+		}
+
+		@if (pendingDeleteTeamId()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">Confirmar exclusão</h2>
+					</div>
+
+					<div class="modal-content">
+						<p>Deseja realmente excluir o time <strong>{{ pendingDeleteTeamName() || 'sem nome' }}</strong>?</p>
+						<div class="actions-row">
+							<button
+								type="button"
+								class="primary-button"
+								[disabled]="deletingTeamId() === pendingDeleteTeamId()"
+								(click)="confirmDeleteTeam()"
+							>
+								Excluir
+							</button>
+							<button type="button" class="secondary-button" (click)="cancelDeleteTeam()">Cancelar</button>
+						</div>
+					</div>
+				</article>
+			</div>
+		}
+
+		@if (isLoadingTeams()) {
+			<div class="state-card">Carregando seus times...</div>
+		} @else if (hasNoTeam()) {
+			<section class="onboarding-grid">
+				<article class="create-card onboarding-card">
+					<h2 class="card-title">Entrar em um time</h2>
+					<p class="onboarding-description">
+						Você ainda não faz parte de nenhum time. Peça o código de convite para quem já é
+						dono/membro de um time e informe abaixo para entrar.
+					</p>
+
+					<form [formGroup]="joinForm" (ngSubmit)="onSubmitJoin()" novalidate>
+						<label for="joinCode" class="field-label">Código do time</label>
+						<input
+							id="joinCode"
+							type="text"
+							formControlName="code"
+							class="field-input"
+							placeholder="Ex.: ABC123"
+							autocomplete="off"
+						/>
+						@if (joinControls.code.invalid && (joinControls.code.touched || joinSubmitted())) {
+							<p class="field-error">Informe um código válido.</p>
+						}
+
+						<button type="submit" class="primary-button full-width" [disabled]="isJoiningByCode()">
+							{{ isJoiningByCode() ? 'Entrando...' : 'Entrar no time' }}
+						</button>
+					</form>
+				</article>
+
+				<article class="create-card onboarding-card">
+					<h2 class="card-title">Ou crie um novo time</h2>
+					<p class="onboarding-description">
+						Se ainda não existe um time para você entrar, crie um novo — você será o dono por padrão.
+					</p>
+					<button type="button" class="primary-button full-width" (click)="openTeamForm()">
+						Criar novo time
+					</button>
+				</article>
+			</section>
+		} @else {
+			<div class="content-grid">
+				<section class="list-card">
+					<div class="card-header">
+						<h2 class="card-title">Portfólios</h2>
+					</div>
+
+					@if (isLoadingPortfolios()) {
+						<p class="empty-state">Carregando portfólios...</p>
+					} @else {
+						<div class="portfolio-list">
+							@for (portfolio of portfolios(); track trackByPortfolioId($index, portfolio)) {
+								<button
+									type="button"
+									class="portfolio-item"
+									[class.active]="selectedPortfolioId() === portfolio.id"
+									(click)="selectPortfolio(portfolio.id)"
+								>
+									<p class="portfolio-name">{{ portfolio.name || 'Sem nome' }}</p>
+								</button>
+							}
+
+							@if (portfolios().length === 0) {
+								<p class="empty-state">Nenhum portfólio encontrado.</p>
+							}
+						</div>
+					}
+				</section>
+
+				<section class="list-card">
+					<div class="card-header">
+						<h2 class="card-title">Times</h2>
+						<button type="button" class="add-form-button" (click)="openTeamForm()">
+							Adicionar Time
+						</button>
+					</div>
+
+					<div class="portfolio-list">
+						@for (team of portfolioTeams(); track trackByTeamId($index, team)) {
+							<div class="team-item" [class.active]="selectedTeamId() === team.id">
+								<button type="button" class="team-item-main" (click)="selectTeam(team.id)">
+									<p class="portfolio-name">{{ team.name || 'Sem nome' }}</p>
+									<p class="team-meta">
+										Dono: {{ team.ownerUserName || 'Não definido' }} · {{ team.members.length }} membro(s)
+									</p>
+								</button>
+								<button type="button" class="secondary-button" (click)="requestDeleteTeam(team)">Excluir</button>
+							</div>
+						}
+
+						@if (portfolioTeams().length === 0) {
+							<p class="empty-state">
+								{{ selectedPortfolioId() ? 'Nenhum time cadastrado para este portfólio.' : 'Selecione um portfólio.' }}
+							</p>
+						}
+					</div>
+				</section>
+
+				<section class="details-card">
+					<div class="card-header">
+						<h2 class="card-title">Membros do time</h2>
+					</div>
+
+					@if (!selectedTeam()) {
+						<p class="empty-state">Selecione um time para ver e gerenciar os membros.</p>
+					} @else {
+						<div class="team-details">
+							<dl class="details-list">
+								<div>
+									<dt>Time</dt>
+									<dd>{{ selectedTeam()?.name || 'Sem nome' }}</dd>
+								</div>
+								<div>
+									<dt>Dono</dt>
+									<dd>{{ selectedTeam()?.ownerUserName || 'Não definido' }}</dd>
+								</div>
+								<div>
+									<dt>Criado em</dt>
+									<dd>{{ formatDate(selectedTeam()?.createdDate) || 'Desconhecido' }}</dd>
+								</div>
+								<div>
+									<dt>Código de convite</dt>
+									<dd>{{ selectedTeam()?.inviteCode || 'Indisponível no momento' }}</dd>
+								</div>
+							</dl>
+
+							<form [formGroup]="addMemberForm" (ngSubmit)="onSubmitAddMember()" class="add-member-form" novalidate>
+								<select formControlName="userId" class="field-input">
+									<option value="" disabled selected>Selecione uma pessoa</option>
+									@for (user of availableUsersForMember(); track trackByUserId($index, user)) {
+										<option [value]="user.id">{{ user.name || user.email || 'Sem nome' }}</option>
+									}
+								</select>
+								@if (addMemberControls.userId.invalid && (addMemberControls.userId.touched || addMemberSubmitted())) {
+									<p class="field-error">Selecione uma pessoa para adicionar ao time.</p>
+								}
+								<button type="submit" class="add-form-button" [disabled]="isSavingMember()">
+									{{ isSavingMember() ? 'Adicionando...' : 'Adicionar' }}
+								</button>
+							</form>
+
+							<div class="criteria-list">
+								@for (member of selectedTeam()?.members; track trackByMemberId($index, member)) {
+									<div class="criteria-item">
+										<div>
+											<p class="criteria-name">{{ member.userName || 'Sem nome' }}</p>
+											<p class="team-meta">{{ member.userEmail }}</p>
+										</div>
+										<div class="criteria-actions">
+											<button
+												type="button"
+												class="secondary-button"
+												[disabled]="removingMemberId() === member.userId"
+												(click)="removeMember(member.userId)"
+											>
+												{{ removingMemberId() === member.userId ? 'Removendo...' : 'Remover' }}
+											</button>
+										</div>
+									</div>
+								}
+
+								@if (selectedTeam()?.members?.length === 0) {
+									<p class="empty-state">Nenhum membro neste time.</p>
+								}
+							</div>
+						</div>
+					}
+				</section>
+			</div>
+		}
+	</div>
+</section>

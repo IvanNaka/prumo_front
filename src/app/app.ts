@@ -29,10 +29,12 @@ export class App {
     portfolios: 'Portfolios',
     projetos: 'Projetos',
     dependencias: 'Dependências',
+    times: 'Times',
     okrs: 'OKRs',
     integracoes: 'Integrações',
     relatorios: 'Relatórios',
     configuracoes: 'Configurações',
+    'nao-autorizado': 'Acesso não autorizado',
   };
 
   constructor() {
