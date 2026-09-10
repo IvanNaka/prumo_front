@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, Observable } from 'rxjs';
 
+import { AuthService } from '../../services/auth.service';
 import {
 	CreatePortfolioDto,
 	Portfolio,
@@ -13,6 +14,7 @@ import {
 	PriorityCriteria,
 	PriorityCriteriaService,
 } from '../../services/priorityCriteriaService';
+import { TeamsService } from '../../services/teamsService';
 
 @Component({
 	selector: 'app-portfolios',
@@ -24,6 +26,8 @@ import {
 export class Portfolios {
 	private readonly portfoliosService = inject(PortfoliosService);
 	private readonly priorityCriteriaService = inject(PriorityCriteriaService);
+	private readonly teamsService = inject(TeamsService);
+	private readonly authService = inject(AuthService);
 	private readonly fb = inject(FormBuilder);
 
 	readonly loading = signal(false);
@@ -219,11 +223,15 @@ export class Portfolios {
 		this.loading.set(true);
 		this.error.set(null);
 
-		this.portfoliosService.getPortfolios().subscribe({
-			next: (portfolios) => {
-				this.portfolios.set(portfolios);
-				if (portfolios.length > 0 && !this.selectedPortfolioId()) {
-					this.selectPortfolio(portfolios[0].id);
+		forkJoin({
+			portfolios: this.portfoliosService.getPortfolios(),
+			teams: this.teamsService.getTeams(),
+		}).subscribe({
+			next: ({ portfolios, teams }) => {
+				const ownPortfolios = this.filterPortfoliosByOwnTeams(portfolios, teams);
+				this.portfolios.set(ownPortfolios);
+				if (ownPortfolios.length > 0 && !this.selectedPortfolioId()) {
+					this.selectPortfolio(ownPortfolios[0].id);
 				}
 				this.loading.set(false);
 			},
@@ -232,6 +240,29 @@ export class Portfolios {
 				this.loading.set(false);
 			},
 		});
+	}
+
+	/**
+	 * Mantém apenas os portfolios associados a algum time do qual o usuário
+	 * autenticado participa (como dono ou membro).
+	 *
+	 * ⚠️ Este filtro é feito só no front-end: o endpoint `GET /Portfolios`
+	 * continua retornando todos os portfolios para qualquer usuário
+	 * autenticado. Para que a restrição seja real (e não apenas visual), o
+	 * backend precisa passar a filtrar `GET /Portfolios` (e o `GET
+	 * /Portfolios/{id}`) pelos times do usuário autenticado via JWT.
+	 */
+	private filterPortfoliosByOwnTeams(portfolios: Portfolio[], teams: import('../../services/teamsService').Team[]): Portfolio[] {
+		const userId = this.authService.getUserId();
+		if (!userId) return portfolios;
+
+		const ownPortfolioIds = new Set(
+			teams
+				.filter((team) => team.ownerUserId === userId || team.members.some((m) => m.userId === userId))
+				.map((team) => team.portfolioId)
+		);
+
+		return portfolios.filter((portfolio) => ownPortfolioIds.has(portfolio.id));
 	}
 
 	selectPortfolio(portfolioId: string): void {
