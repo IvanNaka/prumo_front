@@ -209,29 +209,10 @@
 									<dd>{{ selectedTeam()?.ownerUserName || 'Não definido' }}</dd>
 								</div>
 								<div>
-									<dt>Criado em</dt>
-									<dd>{{ formatDate(selectedTeam()?.createdDate) || 'Desconhecido' }}</dd>
-								</div>
-								<div>
 									<dt>Código de convite</dt>
 									<dd>{{ selectedTeam()?.inviteCode || 'Indisponível no momento' }}</dd>
 								</div>
 							</dl>
-
-							<form [formGroup]="addMemberForm" (ngSubmit)="onSubmitAddMember()" class="add-member-form" novalidate>
-								<select formControlName="userId" class="field-input">
-									<option value="" disabled selected>Selecione uma pessoa</option>
-									@for (user of availableUsersForMember(); track trackByUserId($index, user)) {
-										<option [value]="user.id">{{ user.name || user.email || 'Sem nome' }}</option>
-									}
-								</select>
-								@if (addMemberControls.userId.invalid && (addMemberControls.userId.touched || addMemberSubmitted())) {
-									<p class="field-error">Selecione uma pessoa para adicionar ao time.</p>
-								}
-								<button type="submit" class="add-form-button" [disabled]="isSavingMember()">
-									{{ isSavingMember() ? 'Adicionando...' : 'Adicionar' }}
-								</button>
-							</form>
 
 							<div class="criteria-list">
 								@for (member of selectedTeam()?.members; track trackByMemberId($index, member)) {
