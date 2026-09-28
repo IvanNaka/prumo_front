@@ -6,6 +6,7 @@ import { Projetos } from './components/projetos/projetos';
 import { CriarProjeto } from './components/projetos/criar-projeto/criar-projeto';
 import { DetalhesProjeto } from './components/projetos/detalhes-projeto/detalhes-projeto';
 import { Dependencias } from './components/dependencias/dependencias';
+import { Roadmap } from './components/roadmap/roadmap';
 import { Okrs } from './components/okrs/okrs';
 import { Configuracoes } from './components/configuracoes/configuracoes';
 import { Integracoes } from './components/integracoes/integracoes';
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'projetos/:id', component: DetalhesProjeto, canActivate: [teamRequiredGuard] },
   { path: 'projetos', component: Projetos, canActivate: [teamRequiredGuard] },
   { path: 'dependencias', component: Dependencias, canActivate: [teamRequiredGuard] },
+  { path: 'roadmap', component: Roadmap, canActivate: [teamRequiredGuard] },
   { path: 'times', component: Times },
   { path: 'okrs', component: Okrs, canActivate: [teamRequiredGuard] },
   { path: 'configuracoes', component: Configuracoes, canActivate: [teamRequiredGuard] },

@@ -3,10 +3,11 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@a
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Project, ProjectService } from '../../../services/projectService';
+import { OrcamentoProjeto } from '../orcamento-projeto/orcamento-projeto';
 
 @Component({
   selector: 'app-detalhes-projeto',
-  imports: [],
+  imports: [OrcamentoProjeto],
   templateUrl: './detalhes-projeto.html',
   styleUrl: './detalhes-projeto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

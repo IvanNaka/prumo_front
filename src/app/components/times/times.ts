@@ -12,10 +12,11 @@ import {
 	Team,
 	TeamsService,
 } from '../../services/teamsService';
+import { CapacidadeEquipe } from './capacidade-equipe/capacidade-equipe';
 
 @Component({
 	selector: 'app-times',
-	imports: [ReactiveFormsModule],
+	imports: [ReactiveFormsModule, CapacidadeEquipe],
 	templateUrl: './times.html',
 	styleUrl: './times.css',
 	changeDetection: ChangeDetectionStrategy.OnPush,

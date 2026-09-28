@@ -57,6 +57,10 @@
             <div class="state-card">Nenhuma avaliação cadastrada para este projeto.</div>
           }
         </section>
+
+        @if (project()?.id) {
+          <app-orcamento-projeto [projectId]="project()!.id!" />
+        }
       </article>
     }
 

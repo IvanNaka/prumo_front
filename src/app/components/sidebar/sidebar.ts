@@ -27,6 +27,7 @@ export class Sidebar {
     { id: 'portfolios', icon: 'portfolio', label: 'Portfólios' },
     { id: 'projetos', icon: 'folder-open', label: 'Projetos' },
     { id: 'dependencias', icon: 'link', label: 'Dependências' },
+    { id: 'roadmap', icon: 'target', label: 'Roadmap' },
     { id: 'times', icon: 'team', label: 'Times' },
     { id: 'integracoes', icon: 'integration', label: 'Integrações' },
     // { id: 'okrs', icon: 'target', label: 'OKRs' },

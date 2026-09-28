@@ -1,0 +1,111 @@
+<section class="capacity-section">
+	<div class="card-header">
+		<h2 class="card-title">Capacidade da Equipe</h2>
+	</div>
+
+	@if (feedback()) {
+		<div
+			class="state-card"
+			[class.state-card-success]="feedback()?.kind === 'success'"
+			[class.state-card-error]="feedback()?.kind === 'error'"
+			role="status"
+			aria-live="polite"
+		>
+			{{ feedback()?.text }}
+		</div>
+	}
+
+	<!-- Cenário 3: Registro de Capacidade Mensal -->
+	<form class="capacity-form" [formGroup]="capacityForm" (ngSubmit)="onSubmit()" novalidate>
+		<div class="capacity-form-grid">
+			<div>
+				<label for="capacityUser" class="field-label">Colaborador</label>
+				<select id="capacityUser" formControlName="userId" class="field-input">
+					<option value="" disabled>Selecione</option>
+					@for (member of team().members; track member.userId) {
+						<option [value]="member.userId">{{ member.userName || member.userEmail || 'Sem nome' }}</option>
+					}
+				</select>
+				@if (capacityControls.userId.invalid && (capacityControls.userId.touched || submitted())) {
+					<p class="field-error">Selecione um colaborador.</p>
+				}
+			</div>
+
+			<div>
+				<label for="capacityYear" class="field-label">Ano</label>
+				<select id="capacityYear" formControlName="year" class="field-input">
+					@for (year of years(); track year) {
+						<option [value]="year">{{ year }}</option>
+					}
+				</select>
+			</div>
+
+			<div>
+				<label for="capacityMonth" class="field-label">Mês</label>
+				<select id="capacityMonth" formControlName="month" class="field-input">
+					@for (month of months; track month.value) {
+						<option [value]="month.value">{{ month.label }}</option>
+					}
+				</select>
+			</div>
+
+			<div>
+				<label for="capacityHours" class="field-label">Horas disponíveis</label>
+				<input id="capacityHours" type="number" min="1" formControlName="availableHours" class="field-input" />
+				@if (capacityControls.availableHours.invalid && (capacityControls.availableHours.touched || submitted())) {
+					<p class="field-error">Informe um total de horas disponíveis maior que zero.</p>
+				}
+			</div>
+		</div>
+
+		<button type="submit" class="primary-button" [disabled]="isSaving()">
+			{{ isSaving() ? 'Registrando...' : 'Registrar capacidade' }}
+		</button>
+	</form>
+
+	<!-- Cenário 1: Visualização de capacidade -->
+	<div class="period-selector">
+		@for (year of years(); track year) {
+			@for (month of months; track month.value) {
+				<button
+					type="button"
+					class="period-chip"
+					[class.active]="selectedYear() === year && selectedMonth() === month.value"
+					(click)="selectPeriod(year, month.value)"
+				>
+					{{ month.label.slice(0, 3) }}/{{ year }}
+				</button>
+			}
+		}
+	</div>
+
+	@if (isLoading()) {
+		<p class="empty-state">Carregando capacidade...</p>
+	} @else if (entriesForPeriod().length === 0) {
+		<p class="empty-state">
+			Nenhuma capacidade registrada para {{ monthLabel(selectedMonth()) }}/{{ selectedYear() }}.
+		</p>
+	} @else {
+		<div class="capacity-summary">
+			<span>Ocupação média da equipe em {{ monthLabel(selectedMonth()) }}/{{ selectedYear() }}:</span>
+			<strong>{{ teamAverageOccupancy() }}%</strong>
+		</div>
+
+		<div class="capacity-list">
+			@for (entry of entriesForPeriod(); track trackByEntryId($index, entry)) {
+				<div class="capacity-item">
+					<div class="capacity-info">
+						<p class="capacity-name">{{ entry.userName || 'Colaborador' }}</p>
+						<p class="capacity-meta">
+							{{ entry.allocatedHours }}h alocadas de {{ entry.availableHours }}h disponíveis
+						</p>
+					</div>
+					<div class="occupancy-bar-track">
+						<div class="occupancy-bar" [class]="occupancyClass(entry)" [style.width.%]="occupancy(entry) > 100 ? 100 : occupancy(entry)"></div>
+					</div>
+					<span class="occupancy-value" [class]="occupancyClass(entry)">{{ occupancy(entry) }}%</span>
+				</div>
+			}
+		</div>
+	}
+</section>

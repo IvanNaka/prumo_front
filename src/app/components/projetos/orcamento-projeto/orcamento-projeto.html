@@ -1,0 +1,240 @@
+<section class="budget-section" aria-labelledby="budget-heading">
+  <h3 id="budget-heading">Orçamento</h3>
+
+  @if (isLoadingBudget()) {
+    <div class="state-card" role="status" aria-live="polite">Carregando orçamento...</div>
+  } @else {
+    <!-- Cenário 1 / Cenário 2: Cadastro e Atualização de orçamento -->
+    <form [formGroup]="budgetForm" (ngSubmit)="onSubmitBudget()" class="budget-form" novalidate>
+      <h4 class="subsection-title">{{ budget() ? 'Atualizar orçamento' : 'Cadastrar orçamento' }}</h4>
+
+      <div class="budget-grid">
+        <div class="field">
+          <label for="totalAmount" class="field-label">Valor total do orçamento</label>
+          <input
+            id="totalAmount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            formControlName="totalAmount"
+            class="field-input"
+          />
+          @if (budgetControls.totalAmount.invalid && (budgetControls.totalAmount.touched || budgetSubmitted())) {
+            <p class="field-error">Informe um valor de orçamento maior que zero.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="currency" class="field-label">Moeda</label>
+          <select id="currency" formControlName="currency" class="field-input">
+            <option value="BRL">BRL</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="startDate" class="field-label">Início</label>
+          <input id="startDate" type="date" formControlName="startDate" class="field-input" />
+          @if (budgetControls.startDate.invalid && (budgetControls.startDate.touched || budgetSubmitted())) {
+            <p class="field-error">Informe a data de início.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="endDate" class="field-label">Término previsto</label>
+          <input id="endDate" type="date" formControlName="endDate" class="field-input" />
+          @if (budgetControls.endDate.invalid && (budgetControls.endDate.touched || budgetSubmitted())) {
+            <p class="field-error">Informe a data de término prevista.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="discountRateMonthly" class="field-label">Taxa de desconto mensal (%)</label>
+          <input
+            id="discountRateMonthly"
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="discountRateMonthly"
+            class="field-input"
+          />
+          <p class="field-helper">Utilizada no cálculo do VPL do projeto.</p>
+        </div>
+
+        <div class="field">
+          <label for="expectedReturn" class="field-label">Retorno financeiro esperado</label>
+          <input
+            id="expectedReturn"
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="expectedReturn"
+            class="field-input"
+          />
+        </div>
+      </div>
+
+      @if (budgetSaveError()) {
+        <p class="field-error" role="alert">Não foi possível salvar o orçamento. Tente novamente.</p>
+      }
+
+      <button type="submit" class="submit-button" [disabled]="budgetSaving()">
+        {{ budgetSaving() ? 'Salvando...' : (budget() ? 'Atualizar orçamento' : 'Cadastrar orçamento') }}
+      </button>
+    </form>
+
+    @if (budget()) {
+      <!-- Cenário 4: Cálculo de VPL e Burn Rate -->
+      <section class="metrics-section" aria-labelledby="metrics-heading">
+        <h4 id="metrics-heading" class="subsection-title">Indicadores financeiros</h4>
+
+        @if (isLoadingMetrics()) {
+          <div class="state-card" role="status" aria-live="polite">Calculando indicadores...</div>
+        } @else if (metricsError()) {
+          <div class="state-card state-card-error" role="alert">
+            Não foi possível calcular os indicadores de VPL e Burn Rate.
+          </div>
+        } @else if (metrics()) {
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">VPL (Valor Presente Líquido)</span>
+              <strong class="metric-value" [class.metric-negative]="metrics()!.netPresentValue < 0">
+                {{ formatCurrency(metrics()!.netPresentValue) }}
+              </strong>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Burn Rate mensal</span>
+              <strong class="metric-value">{{ formatCurrency(metrics()!.burnRateMonthly) }}</strong>
+              <span class="metric-caption">{{ metrics()!.burnRatePercent }}% do orçamento/mês</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Total gasto</span>
+              <strong class="metric-value">{{ formatCurrency(metrics()!.totalSpent) }}</strong>
+              <span class="metric-caption">{{ metrics()!.percentSpent }}% do orçamento</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Saldo restante</span>
+              <strong class="metric-value">{{ formatCurrency(metrics()!.remainingBudget) }}</strong>
+            </div>
+
+            @if (metrics()!.isOverBudgetRisk) {
+              <div class="metric-card metric-card-alert" role="alert">
+                <span class="metric-label">Risco de estouro de orçamento</span>
+                @if (metrics()!.projectedDepletionDate) {
+                  <span class="metric-caption">
+                    Esgotamento previsto em {{ metrics()!.projectedDepletionDate }}
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Cenário 3: Registro de custos e despesas -->
+      <section class="expenses-section" aria-labelledby="expenses-heading">
+        <h4 id="expenses-heading" class="subsection-title">Custos e despesas</h4>
+
+        <form [formGroup]="expenseForm" (ngSubmit)="onSubmitExpense()" class="expense-form" novalidate>
+          <div class="expense-grid">
+            <div class="field field-full">
+              <label for="description" class="field-label">Descrição</label>
+              <input
+                id="description"
+                type="text"
+                formControlName="description"
+                class="field-input"
+                placeholder="Ex.: Licença de software, hora extra da equipe"
+              />
+              @if (expenseControls.description.invalid && (expenseControls.description.touched || expenseSubmitted())) {
+                <p class="field-error">Informe uma descrição com pelo menos 3 caracteres.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="category" class="field-label">Categoria</label>
+              <select id="category" formControlName="category" class="field-input">
+                @for (option of expenseCategories; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="amount" class="field-label">Valor</label>
+              <input
+                id="amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                formControlName="amount"
+                class="field-input"
+              />
+              @if (expenseControls.amount.invalid && (expenseControls.amount.touched || expenseSubmitted())) {
+                <p class="field-error">Informe um valor maior que zero.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="expenseDate" class="field-label">Data</label>
+              <input id="expenseDate" type="date" formControlName="date" class="field-input" />
+              @if (expenseControls.date.invalid && (expenseControls.date.touched || expenseSubmitted())) {
+                <p class="field-error">Informe a data do custo/despesa.</p>
+              }
+            </div>
+          </div>
+
+          @if (expenseSaveError()) {
+            <p class="field-error" role="alert">Não foi possível registrar o custo/despesa. Tente novamente.</p>
+          }
+
+          <button type="submit" class="submit-button" [disabled]="expenseSaving()">
+            {{ expenseSaving() ? 'Registrando...' : 'Registrar custo/despesa' }}
+          </button>
+        </form>
+
+        @if (isLoadingExpenses()) {
+          <div class="state-card" role="status" aria-live="polite">Carregando custos e despesas...</div>
+        } @else if (expenses().length > 0) {
+          <table class="expenses-table" role="table">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th><span class="visually-hidden">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (expense of expenses(); track expense.id) {
+                <tr>
+                  <td>{{ expense.description }}</td>
+                  <td>{{ categoryLabel(expense.category) }}</td>
+                  <td>{{ formatCurrency(expense.amount) }}</td>
+                  <td>{{ expense.date | slice: 0 : 10 }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="remove-button"
+                      (click)="removeExpense(expense.id)"
+                      [attr.aria-label]="'Remover ' + expense.description"
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="state-card">Nenhum custo ou despesa registrado ainda.</div>
+        }
+      </section>
+    }
+  }
+</section>

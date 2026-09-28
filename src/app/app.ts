@@ -29,6 +29,7 @@ export class App {
     portfolios: 'Portfolios',
     projetos: 'Projetos',
     dependencias: 'Dependências',
+    roadmap: 'Roadmap',
     times: 'Times',
     okrs: 'OKRs',
     integracoes: 'Integrações',

@@ -1,0 +1,193 @@
+<section class="roadmap-page">
+	<div class="roadmap-shell">
+		<header class="page-hero">
+			<h1 class="page-title">Gestão de Roadmaps</h1>
+		</header>
+
+		@if (feedback()) {
+			<div
+				class="state-card"
+				[class.state-card-success]="feedback()?.kind === 'success'"
+				[class.state-card-error]="feedback()?.kind === 'error'"
+				role="status"
+				aria-live="polite"
+			>
+				{{ feedback()?.text }}
+			</div>
+		}
+
+		@if (showItemForm()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">{{ editingItemId() ? 'Editar item do roadmap' : 'Novo item do roadmap' }}</h2>
+						<button type="button" class="secondary-button" (click)="closeItemForm()">Fechar</button>
+					</div>
+
+					<form [formGroup]="itemForm" (ngSubmit)="onSubmitItem()" novalidate>
+						<label for="itemTitle" class="field-label">Título</label>
+						<input id="itemTitle" type="text" formControlName="title" class="field-input" placeholder="Ex.: Fase 1 - Descoberta" />
+						@if (itemControls.title.invalid && (itemControls.title.touched || itemSubmitted())) {
+							<p class="field-error">Informe um título com pelo menos 3 caracteres.</p>
+						}
+
+						<label for="itemDescription" class="field-label">Descrição</label>
+						<textarea id="itemDescription" formControlName="description" class="field-input field-textarea" rows="3" placeholder="Descreva o objetivo desta fase"></textarea>
+
+						<label for="itemProject" class="field-label">Projeto vinculado (opcional)</label>
+						<select id="itemProject" formControlName="projectId" class="field-input">
+							<option value="">Nenhum projeto vinculado</option>
+							@for (project of projects(); track project.id) {
+								<option [value]="project.id">{{ project.name || 'Sem nome' }}</option>
+							}
+						</select>
+
+						<label for="itemStartDate" class="field-label">Início</label>
+						<input id="itemStartDate" type="date" formControlName="startDate" class="field-input" />
+						@if (itemControls.startDate.invalid && (itemControls.startDate.touched || itemSubmitted())) {
+							<p class="field-error">Informe a data de início.</p>
+						}
+
+						<label for="itemEndDate" class="field-label">Término</label>
+						<input id="itemEndDate" type="date" formControlName="endDate" class="field-input" />
+						@if (itemControls.endDate.invalid && (itemControls.endDate.touched || itemSubmitted())) {
+							<p class="field-error">Informe a data de término.</p>
+						}
+
+						<label for="itemStatus" class="field-label">Status</label>
+						<select id="itemStatus" formControlName="status" class="field-input">
+							@for (option of statusOptions; track option.value) {
+								<option [value]="option.value">{{ option.label }}</option>
+							}
+						</select>
+
+						<button type="submit" class="primary-button full-width" [disabled]="isSavingItem()">
+							{{ isSavingItem() ? 'Salvando...' : editingItemId() ? 'Salvar alterações' : 'Adicionar item' }}
+						</button>
+					</form>
+				</article>
+			</div>
+		}
+
+		@if (pendingDeleteId()) {
+			<div class="modal-overlay">
+				<div class="modal-backdrop" aria-hidden="true"></div>
+				<article class="create-card modal-card">
+					<div class="card-header">
+						<h2 class="card-title">Confirmar exclusão</h2>
+					</div>
+					<div class="modal-content">
+						<p>Deseja realmente excluir o item <strong>{{ pendingDeleteTitle() || 'sem título' }}</strong> do roadmap?</p>
+						<div class="actions-row">
+							<button type="button" class="primary-button" (click)="confirmDelete()">Excluir</button>
+							<button type="button" class="secondary-button" (click)="cancelDelete()">Cancelar</button>
+						</div>
+					</div>
+				</article>
+			</div>
+		}
+
+		@if (isLoadingPortfolios()) {
+			<div class="state-card">Carregando portfólios...</div>
+		} @else {
+			<div class="content-grid">
+				<section class="list-card">
+					<div class="card-header">
+						<h2 class="card-title">Portfólios</h2>
+					</div>
+					<div class="portfolio-list">
+						@for (portfolio of portfolios(); track trackByPortfolioId($index, portfolio)) {
+							<button
+								type="button"
+								class="portfolio-item"
+								[class.active]="selectedPortfolioId() === portfolio.id"
+								(click)="selectPortfolio(portfolio.id)"
+							>
+								<p class="portfolio-name">{{ portfolio.name || 'Sem nome' }}</p>
+							</button>
+						}
+						@if (portfolios().length === 0) {
+							<p class="empty-state">Nenhum portfólio encontrado.</p>
+						}
+					</div>
+				</section>
+
+				<section class="details-card">
+					<div class="card-header">
+						<h2 class="card-title">Roadmap {{ selectedPortfolio()?.name ? '· ' + selectedPortfolio()?.name : '' }}</h2>
+						<div class="tab-actions">
+							<button type="button" class="tab-button" [class.active]="activeTab() === 'visualizacao'" (click)="setTab('visualizacao')">
+								Visualização
+							</button>
+							<button type="button" class="tab-button" [class.active]="activeTab() === 'estrutura'" (click)="setTab('estrutura')">
+								Gestão estrutural
+							</button>
+							<button type="button" class="add-form-button" [disabled]="!selectedPortfolioId()" (click)="openCreateForm()">
+								Adicionar item
+							</button>
+						</div>
+					</div>
+
+					@if (!selectedPortfolioId()) {
+						<p class="empty-state">Selecione um portfólio para visualizar o roadmap.</p>
+					} @else if (isLoadingItems()) {
+						<p class="empty-state">Carregando roadmap...</p>
+					} @else if (items().length === 0) {
+						<p class="empty-state">Nenhum item cadastrado no roadmap deste portfólio.</p>
+					} @else if (activeTab() === 'visualizacao') {
+						<!-- Cenário 1: Visualização do roadmap -->
+						<div class="timeline">
+							<div class="timeline-header">
+								<span>{{ timelineStart() }}</span>
+								<span>{{ timelineEnd() }}</span>
+							</div>
+							@for (item of timelineItems(); track trackByItemId($index, item)) {
+								<div class="timeline-row">
+									<div class="timeline-label">
+										<p class="timeline-title">{{ item.title }}</p>
+										<p class="timeline-meta">{{ item.projectName || 'Sem projeto vinculado' }}</p>
+									</div>
+									<div class="timeline-track">
+										<div
+											class="timeline-bar"
+											[class]="statusClass(item.status)"
+											[style.margin-left.%]="item.offsetPercent"
+											[style.width.%]="item.widthPercent"
+											[attr.title]="formatDate(item.startDate) + ' – ' + formatDate(item.endDate)"
+										>
+											<span class="timeline-bar-label">{{ statusLabel(item.status) }}</span>
+										</div>
+									</div>
+								</div>
+							}
+						</div>
+					} @else {
+						<!-- Cenário 2: Gestão estrutural de Portfólios (estruturação do roadmap) -->
+						<div class="structure-list">
+							@for (item of orderedItems(); track trackByItemId($index, item); let idx = $index) {
+								<div class="structure-item">
+									<div class="structure-order">
+										<button type="button" class="order-button" [disabled]="idx === 0" (click)="moveItem(item, 'up')" aria-label="Mover para cima">↑</button>
+										<button type="button" class="order-button" [disabled]="idx === orderedItems().length - 1" (click)="moveItem(item, 'down')" aria-label="Mover para baixo">↓</button>
+									</div>
+									<div class="structure-info">
+										<p class="structure-title">{{ item.title }}</p>
+										<p class="timeline-meta">
+											{{ formatDate(item.startDate) }} – {{ formatDate(item.endDate) }} · {{ item.projectName || 'Sem projeto vinculado' }}
+										</p>
+									</div>
+									<span class="status-badge" [class]="statusClass(item.status)">{{ statusLabel(item.status) }}</span>
+									<div class="structure-actions">
+										<button type="button" class="secondary-button" (click)="openEditForm(item)">Editar</button>
+										<button type="button" class="secondary-button" (click)="requestDelete(item)">Excluir</button>
+									</div>
+								</div>
+							}
+						</div>
+					}
+				</section>
+			</div>
+		}
+	</div>
+</section>
