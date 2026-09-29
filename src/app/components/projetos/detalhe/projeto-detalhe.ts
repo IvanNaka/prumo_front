@@ -29,13 +29,15 @@ import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
 import { OkrAssociacoes } from '../../../shared/okr-associacoes';
 import { OkrsService } from '../../../core/services/okrs.service';
 import { ProjetoForm } from '../projeto-form';
+import { AbaOrcamento } from './aba-orcamento';
+import { AuthService } from '../../../core/services/auth.service';
 
-export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs';
+export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'orcamento';
 
 /** Detalhe do projeto (/projetos/{id}) — roteiro do Cap. 4, Parte 2. */
 @Component({
   selector: 'app-projeto-detalhe',
-  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes],
+  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes, AbaOrcamento],
   templateUrl: './projeto-detalhe.html',
 })
 export class ProjetoDetalhePage {
@@ -44,6 +46,10 @@ export class ProjetoDetalhePage {
   private readonly contexto = inject(PortfolioContextService);
   private readonly toast = inject(ToastService);
   private readonly okrsService = inject(OkrsService);
+  private readonly auth = inject(AuthService);
+
+  /** Aba "Orçamento": perfis que podem ver o financeiro (Seção 3.6). */
+  readonly veFinanceiro = () => this.auth.temPerfil(PERMISSOES.verFinanceiro);
 
   readonly permissoes = PERMISSOES;
   readonly rotuloStatus = ROTULO_PROJETO_STATUS;

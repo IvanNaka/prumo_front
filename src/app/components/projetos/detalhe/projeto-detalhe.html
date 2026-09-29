@@ -41,6 +41,9 @@
       <button type="button" class="tab" [class.active]="aba() === 'resumo'" (click)="aba.set('resumo')">Resumo</button>
       <button type="button" class="tab" [class.active]="aba() === 'avaliacao'" (click)="aba.set('avaliacao')">Avaliação</button>
       <button type="button" class="tab" [class.active]="aba() === 'okrs'" (click)="aba.set('okrs')">OKRs</button>
+      @if (veFinanceiro()) {
+        <button type="button" class="tab" [class.active]="aba() === 'orcamento'" (click)="aba.set('orcamento')">Orçamento</button>
+      }
     </nav>
 
     @switch (aba()) {
@@ -101,6 +104,9 @@
             </table>
           </div>
         </div>
+      }
+      @case ('orcamento') {
+        <app-aba-orcamento [projetoId]="p.id" [editavel]="!portfolioEncerrado()"></app-aba-orcamento>
       }
       @case ('okrs') {
         <app-okr-associacoes
