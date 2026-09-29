@@ -14,9 +14,8 @@ import { Okrs } from './components/okrs/okrs';
 import { Criterios } from './components/portfolio/criterios/criterios';
 import { VisaoGeral } from './components/portfolio/visao-geral/visao-geral';
 import { Portfolios } from './components/portfolios/portfolios';
-import { CriarProjeto } from './components/projetos/criar-projeto/criar-projeto';
-import { DetalhesProjeto } from './components/projetos/detalhes-projeto/detalhes-projeto';
-import { Projetos } from './components/projetos/projetos';
+import { Projetos } from './components/portfolio/projetos/projetos';
+import { ProjetoDetalhePage } from './components/projetos/detalhe/projeto-detalhe';
 import { Relatorios } from './components/relatorios/relatorios';
 import { Times } from './components/times/times';
 import { Shell } from './layout/shell';
@@ -48,13 +47,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'visao-geral', pathMatch: 'full' },
         ],
       },
-      {
-        path: 'projetos/novo',
-        component: CriarProjeto,
-        canActivate: [roleGuard(PERMISSOES.editarProjetos)],
-        data: { titulo: 'Novo projeto' },
-      },
-      { path: 'projetos/:id', component: DetalhesProjeto, data: { titulo: 'Projeto' } },
+      { path: 'projetos/:id', component: ProjetoDetalhePage, data: { titulo: 'Projeto' } },
       { path: 'equipes', component: Times, data: { titulo: 'Equipes' } },
       { path: 'okrs', component: Okrs, data: { titulo: 'OKRs' } },
       {

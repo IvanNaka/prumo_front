@@ -1,0 +1,122 @@
+@if (projeto(); as p) {
+  <section class="page">
+    <header class="page-header">
+      <div>
+        <a class="btn btn-link" style="padding-left: 0" [routerLink]="['/portfolios', p.portfolioId, 'projetos']">← {{ p.portfolioNome }}</a>
+        <div class="row">
+          <span [class]="badgeProjeto(p.status)">{{ rotuloStatus[p.status] }}</span>
+          <span [class]="badgeAvaliacao(p.statusAvaliacao)">Avaliação: {{ rotuloAvaliacao[p.statusAvaliacao] }}</span>
+          <span class="badge badge-purple">{{ rotuloCategoria[p.categoriaEstrategica] }}</span>
+        </div>
+        <h1>{{ p.nome }}</h1>
+        <p class="page-subtitle">Responsável: <strong>{{ p.responsavelNome }}</strong></p>
+      </div>
+
+      <div class="row">
+        @for (acao of acoes(); track acao) {
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-danger]="acao === 'Cancelar'"
+            [class.btn-secondary]="acao !== 'Cancelar'"
+            *temPerfil="permissoes.editarProjetos"
+            (click)="solicitar(acao)"
+          >
+            {{ rotuloAcao[acao] }}
+          </button>
+        }
+        @if (!somenteLeitura()) {
+          <button type="button" class="btn btn-primary btn-sm" *temPerfil="permissoes.editarProjetos" (click)="editando.set(true)">
+            Editar
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (portfolioEncerrado()) {
+      <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
+    }
+
+    <nav class="tabs">
+      <button type="button" class="tab" [class.active]="aba() === 'resumo'" (click)="aba.set('resumo')">Resumo</button>
+      <button type="button" class="tab" [class.active]="aba() === 'avaliacao'" (click)="aba.set('avaliacao')">Avaliação</button>
+    </nav>
+
+    @switch (aba()) {
+      @case ('resumo') {
+        <div class="grid-4">
+          <div class="card kpi">
+            <span class="kpi-label">Score</span>
+            <span class="kpi-value">{{ p.scoreAtual !== null ? num(p.scoreAtual) : '—' }}</span>
+          </div>
+          <div class="card kpi">
+            <span class="kpi-label">Posição no ranking</span>
+            <span class="kpi-value">{{ p.posicaoRanking ?? '—' }}</span>
+          </div>
+          <div class="card kpi">
+            <span class="kpi-label">Orçamento aprovado</span>
+            <span class="kpi-value">{{ brl(p.orcamentoAprovado) }}</span>
+          </div>
+          <div class="card kpi">
+            <span class="kpi-label">Prioridade</span>
+            <span class="kpi-value"><span [class]="badgePrioridade(p.prioridade)">{{ rotuloPrioridade[p.prioridade] }}</span></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Dados do projeto</h2>
+          <dl class="grid-3" style="margin: 1rem 0 0">
+            <div><dt class="kpi-label">Início</dt><dd>{{ data(p.dataInicio) }}</dd></div>
+            <div><dt class="kpi-label">Término</dt><dd>{{ data(p.dataFim) }}</dd></div>
+            <div><dt class="kpi-label">Conclusão</dt><dd>{{ dataHora(p.dataConclusao) }}</dd></div>
+            <div><dt class="kpi-label">Categoria</dt><dd>{{ p.categoriaEstrategica }} — {{ descricaoCategoria[p.categoriaEstrategica] }}</dd></div>
+            <div><dt class="kpi-label">Chave no Jira</dt><dd>{{ p.jiraProjectKey || '—' }}</dd></div>
+            <div><dt class="kpi-label">Última priorização</dt><dd>{{ dataHora(p.dataUltimaPriorizacao) }}</dd></div>
+          </dl>
+          <p class="page-subtitle" style="margin-top: 1rem">{{ p.descricao || 'Sem descrição.' }}</p>
+        </div>
+      }
+      @case ('avaliacao') {
+        <div class="card">
+          <h2 class="card-title">Critérios utilizados na avaliação</h2>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Critério</th><th>Tipo</th><th>Peso</th><th>Nota (1 a 5)</th><th>Avaliador</th></tr>
+              </thead>
+              <tbody>
+                @for (nota of p.avaliacoes; track nota.criterioId) {
+                  <tr>
+                    <td class="strong">{{ nota.criterioNome }}</td>
+                    <td>{{ rotuloTipo[nota.tipo] }}</td>
+                    <td>{{ num(nota.peso) }}</td>
+                    <td>{{ nota.nota ?? '—' }}</td>
+                    <td class="muted">{{ nota.avaliadorNome || '—' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="empty-state">O portfólio não tem critérios cadastrados.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+
+    @if (editando()) {
+      <app-projeto-form [portfolioId]="p.portfolioId" [projeto]="p" (salvo)="salvo($event)" (fechar)="editando.set(false)"></app-projeto-form>
+    }
+
+    @if (acaoPendente() === 'Cancelar') {
+      <app-confirm-dialog
+        titulo="Cancelar projeto"
+        mensagem="O projeto cancelado não poderá mais ser editado. Deseja continuar?"
+        rotuloConfirmar="Cancelar projeto"
+        (confirmar)="executar('Cancelar')"
+        (cancelar)="acaoPendente.set(null)"
+      ></app-confirm-dialog>
+    }
+  </section>
+} @else {
+  <div class="card empty-state">Carregando projeto...</div>
+}
