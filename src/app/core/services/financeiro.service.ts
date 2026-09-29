@@ -15,6 +15,28 @@ export interface Lancamento {
   dataLancamento: string;
 }
 
+export interface FluxoCaixa {
+  mes: number;
+  valor: number;
+}
+
+export interface BusinessCase {
+  id?: string | null;
+  projetoId: string;
+  cadastrado: boolean;
+  investimentoInicial: number;
+  taxaDescontoAnual: number;
+  fluxosPrevistos: FluxoCaixa[];
+}
+
+export interface Retorno {
+  id: string;
+  projetoId: string;
+  data: string;
+  valor: number;
+  descricao?: string | null;
+}
+
 export interface SalvarLancamento {
   descricao: string;
   valor: number;
@@ -38,6 +60,25 @@ export class FinanceiroService {
 
   excluirLancamento(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/lancamentos/${id}`);
+  }
+
+  businessCase(projetoId: string): Observable<BusinessCase> {
+    return this.http.get<BusinessCase>(`${this.api}/projetos/${projetoId}/business-case`);
+  }
+
+  salvarBusinessCase(
+    projetoId: string,
+    dados: { investimentoInicial: number; taxaDescontoAnual: number; fluxosPrevistos: FluxoCaixa[] }
+  ): Observable<BusinessCase> {
+    return this.http.put<BusinessCase>(`${this.api}/projetos/${projetoId}/business-case`, dados);
+  }
+
+  retornos(projetoId: string): Observable<Retorno[]> {
+    return this.http.get<Retorno[]>(`${this.api}/projetos/${projetoId}/retornos`);
+  }
+
+  criarRetorno(projetoId: string, dados: { data: string; valor: number; descricao?: string | null }): Observable<Retorno> {
+    return this.http.post<Retorno>(`${this.api}/projetos/${projetoId}/retornos`, dados);
   }
 
   indicadoresProjeto(projetoId: string): Observable<IndicadoresProjeto> {

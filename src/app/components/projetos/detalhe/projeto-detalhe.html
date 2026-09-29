@@ -43,6 +43,7 @@
       <button type="button" class="tab" [class.active]="aba() === 'okrs'" (click)="aba.set('okrs')">OKRs</button>
       @if (veFinanceiro()) {
         <button type="button" class="tab" [class.active]="aba() === 'orcamento'" (click)="aba.set('orcamento')">Orçamento</button>
+        <button type="button" class="tab" [class.active]="aba() === 'business-case'" (click)="aba.set('business-case')">Business case</button>
       }
     </nav>
 
@@ -107,6 +108,9 @@
       }
       @case ('orcamento') {
         <app-aba-orcamento [projetoId]="p.id" [editavel]="!portfolioEncerrado()"></app-aba-orcamento>
+      }
+      @case ('business-case') {
+        <app-aba-business-case [projetoId]="p.id" [editavel]="!portfolioEncerrado()"></app-aba-business-case>
       }
       @case ('okrs') {
         <app-okr-associacoes

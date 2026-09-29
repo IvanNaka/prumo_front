@@ -26,7 +26,20 @@ export interface BurnRate extends Indicador {
   projetos?: BurnRate[] | null;
 }
 
+/** F6 — VPL esperado e realizado. */
+export interface Vpl extends Indicador {
+  projetoId?: string | null;
+  projetoNome?: string | null;
+  taxaMensal: number;
+  vplEsperado: number;
+  vplRealizado: number;
+  diferenca: number;
+  percentualAtingimento: number | null;
+  projetos?: Vpl[] | null;
+}
+
 /** GET /projetos/{id}/indicadores. */
 export interface IndicadoresProjeto {
   burnRate: BurnRate;
+  vpl: Vpl;
 }

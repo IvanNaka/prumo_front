@@ -30,14 +30,15 @@ import { OkrAssociacoes } from '../../../shared/okr-associacoes';
 import { OkrsService } from '../../../core/services/okrs.service';
 import { ProjetoForm } from '../projeto-form';
 import { AbaOrcamento } from './aba-orcamento';
+import { AbaBusinessCase } from './aba-business-case';
 import { AuthService } from '../../../core/services/auth.service';
 
-export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'orcamento';
+export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'orcamento' | 'business-case';
 
 /** Detalhe do projeto (/projetos/{id}) — roteiro do Cap. 4, Parte 2. */
 @Component({
   selector: 'app-projeto-detalhe',
-  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes, AbaOrcamento],
+  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes, AbaOrcamento, AbaBusinessCase],
   templateUrl: './projeto-detalhe.html',
 })
 export class ProjetoDetalhePage {
