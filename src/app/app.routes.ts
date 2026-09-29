@@ -12,6 +12,7 @@ import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
 import { Criterios } from './components/portfolio/criterios/criterios';
+import { Priorizacao } from './components/portfolio/priorizacao/priorizacao';
 import { VisaoGeral } from './components/portfolio/visao-geral/visao-geral';
 import { Portfolios } from './components/portfolios/portfolios';
 import { Projetos } from './components/portfolio/projetos/projetos';
@@ -35,6 +36,7 @@ export const routes: Routes = [
         children: [
           { path: 'visao-geral', component: VisaoGeral, data: { titulo: 'Visão geral do portfólio' } },
           { path: 'criterios', component: Criterios, data: { titulo: 'Critérios de priorização' } },
+          { path: 'priorizacao', component: Priorizacao, data: { titulo: 'Priorização' } },
           { path: 'dashboard', component: Dashboard, data: { titulo: 'Dashboard' } },
           { path: 'projetos', component: Projetos, data: { titulo: 'Projetos' } },
           { path: 'dependencias', component: Dependencias, data: { titulo: 'Dependências' } },

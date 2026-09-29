@@ -1,0 +1,13 @@
+.matriz .col-criterio {
+  min-width: 140px;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+  color: #0f172a;
+}
+
+.matriz .nota {
+  min-width: 130px;
+  padding: 0.35rem 0.5rem;
+}
