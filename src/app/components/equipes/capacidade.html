@@ -1,0 +1,82 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <a class="btn btn-link" style="padding-left: 0" routerLink="/equipes">← Equipes</a>
+      <h1>Capacidade {{ resultado()?.equipeNome ? '— ' + resultado()?.equipeNome : '' }}</h1>
+      <p class="page-subtitle">Ocupação = demanda prevista (estimativa − horas lançadas das tarefas abertas) ÷ capacidade.</p>
+    </div>
+    <div class="field">
+      <label for="mes">Mês</label>
+      <input id="mes" type="month" [value]="mes()" (change)="mudarMes($any($event.target).value)" />
+    </div>
+  </header>
+
+  @if (resultado(); as r) {
+    @if (!r.disponivel) {
+      <div class="card empty-state">{{ r.motivo || rn18 }}</div>
+    } @else {
+      <div class="grid-4">
+        <div class="card kpi">
+          <span class="kpi-label">Capacidade</span>
+          <span class="kpi-value">{{ num(r.capacidade) }} h</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label">Demanda</span>
+          <span class="kpi-value">{{ num(r.demanda) }} h</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label">Ocupação</span>
+          <span class="kpi-value">{{ num(r.ocupacao) }}%</span>
+          <span [class]="badge(r.classificacao)">{{ r.classificacao }}</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label">Utilização (horas do mês)</span>
+          <span class="kpi-value">{{ num(r.utilizacao) }}%</span>
+          <span class="muted small">{{ num(r.horasMes) }} h lançadas</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Ocupação por membro</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Membro</th><th style="min-width: 240px">Ocupação</th><th>Capacidade</th><th>Demanda</th><th>Utilização</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="strong">Total da equipe</td>
+                <td>
+                  <div class="row" style="flex-wrap: nowrap">
+                    <div [class]="'progress ' + cor(r.classificacao)" style="flex: 1"><span [style.width.%]="largura(r.ocupacao)"></span></div>
+                    <span class="strong">{{ num(r.ocupacao) }}%</span>
+                  </div>
+                </td>
+                <td>{{ num(r.capacidade) }} h</td>
+                <td>{{ num(r.demanda) }} h</td>
+                <td>{{ num(r.utilizacao) }}%</td>
+              </tr>
+              @for (m of r.membros ?? []; track m.membroId) {
+                <tr>
+                  <td>{{ m.membroNome }}</td>
+                  <td>
+                    <div class="row" style="flex-wrap: nowrap">
+                      <div [class]="'progress ' + cor(m.classificacao)" style="flex: 1"><span [style.width.%]="largura(m.ocupacao)"></span></div>
+                      <span>{{ num(m.ocupacao) }}%</span>
+                      <span [class]="badge(m.classificacao)">{{ m.classificacao }}</span>
+                    </div>
+                  </td>
+                  <td>{{ num(m.capacidade) }} h</td>
+                  <td>{{ num(m.demanda) }} h</td>
+                  <td>{{ num(m.utilizacao) }}%</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="card empty-state">Carregando...</div>
+  }
+</section>

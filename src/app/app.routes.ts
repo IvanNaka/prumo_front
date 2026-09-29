@@ -18,7 +18,8 @@ import { Portfolios } from './components/portfolios/portfolios';
 import { Projetos } from './components/portfolio/projetos/projetos';
 import { ProjetoDetalhePage } from './components/projetos/detalhe/projeto-detalhe';
 import { Relatorios } from './components/relatorios/relatorios';
-import { Times } from './components/times/times';
+import { CapacidadeEquipe } from './components/equipes/capacidade';
+import { Equipes } from './components/equipes/equipes';
 import { Shell } from './layout/shell';
 
 export const routes: Routes = [
@@ -50,7 +51,8 @@ export const routes: Routes = [
         ],
       },
       { path: 'projetos/:id', component: ProjetoDetalhePage, data: { titulo: 'Projeto' } },
-      { path: 'equipes', component: Times, data: { titulo: 'Equipes' } },
+      { path: 'equipes', component: Equipes, data: { titulo: 'Equipes' } },
+      { path: 'equipes/:id/capacidade', component: CapacidadeEquipe, data: { titulo: 'Capacidade da equipe' } },
       { path: 'okrs', component: Okrs, data: { titulo: 'OKRs' } },
       {
         path: 'integracoes/jira',

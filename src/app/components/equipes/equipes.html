@@ -1,0 +1,153 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Equipes</h1>
+      <p class="page-subtitle">
+        Cadastre os colaboradores com custo por hora e capacidade mensal. O e-mail liga o membro às tarefas e horas do Jira.
+      </p>
+    </div>
+    <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarEquipes" (click)="novaEquipe()">Nova equipe</button>
+  </header>
+
+  @if (carregando()) {
+    <div class="card empty-state">Carregando equipes...</div>
+  } @else {
+    @for (equipe of equipes(); track equipe.id) {
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">{{ equipe.nome }}</h2>
+            <p class="card-subtitle">
+              {{ equipe.membros.length }} membro(s) · capacidade {{ equipe.capacidadeMensalTotal }} h/mês
+              @if (equipe.portfolioNome) { · portfólio {{ equipe.portfolioNome }} }
+            </p>
+          </div>
+          <div class="row">
+            <a class="btn btn-secondary btn-sm" [routerLink]="['/equipes', equipe.id, 'capacidade']">Capacidade</a>
+            <ng-container *temPerfil="permissoes.editarEquipes">
+              <button type="button" class="btn btn-primary btn-sm" (click)="novoMembro(equipe)">Adicionar membro</button>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="editarEquipe(equipe)">Editar</button>
+              <button type="button" class="btn btn-link btn-sm text-danger" (click)="excluindo.set(equipe)">Excluir</button>
+            </ng-container>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Nome</th><th>E-mail</th><th class="text-right">Custo/hora</th><th class="text-right">Capacidade mensal</th><th class="actions"></th></tr>
+            </thead>
+            <tbody>
+              @for (membro of equipe.membros; track membro.id) {
+                <tr>
+                  <td class="strong">{{ membro.nome }}</td>
+                  <td>{{ membro.email }}</td>
+                  <td class="text-right">{{ brl(membro.custoHora) }}</td>
+                  <td class="text-right">{{ membro.capacidadeMensalHoras }} h</td>
+                  <td class="actions">
+                    <ng-container *temPerfil="permissoes.editarEquipes">
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="editarMembro(equipe, membro)">Editar</button>
+                      <button type="button" class="btn btn-link btn-sm text-danger" (click)="removerMembro(equipe, membro)">Remover</button>
+                    </ng-container>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="empty-state">Nenhum membro cadastrado.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+    } @empty {
+      <div class="card empty-state">Nenhuma equipe cadastrada.</div>
+    }
+  }
+
+  @if (formEquipeAberto()) {
+    <div class="modal-overlay" (click)="formEquipeAberto.set(false)">
+      <div class="modal modal-sm" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">{{ equipeEmEdicao() ? 'Editar equipe' : 'Nova equipe' }}</h2>
+          <button type="button" class="btn btn-link" (click)="formEquipeAberto.set(false)">Fechar</button>
+        </div>
+        <form class="form-grid" [formGroup]="formEquipe" (ngSubmit)="salvarEquipe()" novalidate>
+          <div class="field">
+            <label for="nomeEquipe">Nome *</label>
+            <input id="nomeEquipe" formControlName="nome" maxlength="100" />
+          </div>
+          <div class="field">
+            <label for="portfolioEquipe">Portfólio (opcional)</label>
+            <select id="portfolioEquipe" formControlName="portfolioId">
+              <option value="">Nenhum</option>
+              @for (p of portfolios(); track p.id) {
+                <option [value]="p.id">{{ p.nome }}</option>
+              }
+            </select>
+            <p class="field-help">Equipes vinculadas a um portfólio aparecem no indicador de capacidade do dashboard.</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="formEquipeAberto.set(false)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formEquipe.invalid">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (membroContexto(); as ctx) {
+    <div class="modal-overlay" (click)="membroContexto.set(null)">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">{{ ctx.membro ? 'Editar membro' : 'Novo membro' }} — {{ ctx.equipe.nome }}</h2>
+          <button type="button" class="btn btn-link" (click)="membroContexto.set(null)">Fechar</button>
+        </div>
+        <form class="form-grid cols-2" [formGroup]="formMembro" (ngSubmit)="salvarMembro()" novalidate>
+          <div class="field full">
+            <label for="usuario">Usuário do Prumo (opcional)</label>
+            <select id="usuario" formControlName="usuarioId" (change)="escolherUsuario($any($event.target).value)">
+              <option value="">Colaborador sem acesso ao sistema</option>
+              @for (u of usuarios(); track u.id) {
+                <option [value]="u.id">{{ u.nome }} ({{ u.email }})</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="nomeMembro">Nome *</label>
+            <input id="nomeMembro" formControlName="nome" maxlength="150" />
+          </div>
+          <div class="field">
+            <label for="emailMembro">E-mail (o mesmo do Jira) *</label>
+            <input id="emailMembro" type="email" formControlName="email" maxlength="200" />
+            @if (formMembro.controls.email.invalid && formMembro.controls.email.touched) {
+              <p class="field-error">Informe um e-mail válido.</p>
+            }
+          </div>
+          <div class="field">
+            <label for="custo">Custo por hora (R$) *</label>
+            <input id="custo" type="number" min="0" step="0.01" formControlName="custoHora" />
+          </div>
+          <div class="field">
+            <label for="capacidade">Capacidade mensal (h) *</label>
+            <input id="capacidade" type="number" min="1" max="300" step="1" formControlName="capacidadeMensalHoras" />
+            @if (formMembro.controls.capacidadeMensalHoras.invalid && formMembro.controls.capacidadeMensalHoras.touched) {
+              <p class="field-error">Informe entre 1 e 300 horas.</p>
+            }
+          </div>
+          <div class="form-actions field full">
+            <button type="button" class="btn btn-secondary" (click)="membroContexto.set(null)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formMembro.invalid">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (excluindo(); as equipe) {
+    <app-confirm-dialog
+      titulo="Excluir equipe"
+      [mensagem]="'Excluir a equipe ' + equipe.nome + ' e todos os seus membros?'"
+      rotuloConfirmar="Excluir"
+      (confirmar)="confirmarExclusao()"
+      (cancelar)="excluindo.set(null)"
+    ></app-confirm-dialog>
+  }
+</section>
