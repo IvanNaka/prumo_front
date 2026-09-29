@@ -31,6 +31,7 @@ export class Sidebar {
     { rota: '/times', icon: 'team', label: 'Equipes', perfis: TODOS },
     { rota: '/relatorios', icon: 'bar-chart-3', label: 'Relatórios', perfis: PERMISSOES.verRelatorios },
     { rota: '/integracoes', icon: 'integration', label: 'Integrações', perfis: PERMISSOES.integracoes },
+    { rota: '/admin/usuarios', icon: 'settings', label: 'Usuários', perfis: PERMISSOES.gerirUsuarios },
   ];
 
   /** Cada item aparece somente para os perfis que podem ver aquele recurso. */

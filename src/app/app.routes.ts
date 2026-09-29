@@ -15,6 +15,7 @@ import { DetalhesProjeto } from './components/projetos/detalhes-projeto/detalhes
 import { Projetos } from './components/projetos/projetos';
 import { Relatorios } from './components/relatorios/relatorios';
 import { Times } from './components/times/times';
+import { Usuarios } from './components/admin/usuarios/usuarios';
 import { Shell } from './layout/shell';
 
 export const routes: Routes = [
@@ -48,6 +49,12 @@ export const routes: Routes = [
         component: Relatorios,
         canActivate: [roleGuard(PERMISSOES.verRelatorios)],
         data: { titulo: 'Relatórios' },
+      },
+      {
+        path: 'admin/usuarios',
+        component: Usuarios,
+        canActivate: [roleGuard(PERMISSOES.gerirUsuarios)],
+        data: { titulo: 'Usuários' },
       },
       { path: 'nao-autorizado', component: NaoAutorizado, data: { titulo: 'Acesso não autorizado' } },
       { path: '', redirectTo: 'portfolios', pathMatch: 'full' },
