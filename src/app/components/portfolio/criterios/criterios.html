@@ -1,0 +1,136 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Critérios de priorização</h1>
+      <p class="page-subtitle">
+        Cada projeto recebe uma nota de 1 a 5 em cada critério. O peso vai de 0,01 a 10.
+      </p>
+    </div>
+    @if (!encerrado()) {
+      <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarCriterios" (click)="novo()">
+        Novo critério
+      </button>
+    }
+  </header>
+
+  @if (encerrado()) {
+    <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
+  }
+
+  <div class="alert alert-info">Use o tipo Custo para critérios como Esforço e Risco.</div>
+
+  <div class="card">
+    @if (carregando()) {
+      <p class="empty-state">Carregando critérios...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Descrição</th>
+              <th>Peso</th>
+              <th>Tipo</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (criterio of criterios(); track criterio.id) {
+              <tr>
+                <td class="strong">{{ criterio.nome }}</td>
+                <td class="muted">{{ criterio.descricao || '—' }}</td>
+                <td>{{ num(criterio.peso) }}</td>
+                <td>
+                  <span class="badge" [class.badge-green]="criterio.tipo === 'Beneficio'" [class.badge-yellow]="criterio.tipo === 'Custo'">
+                    {{ criterio.tipo ? rotuloTipo[criterio.tipo] : '—' }}
+                  </span>
+                </td>
+                <td class="actions">
+                  @if (!encerrado()) {
+                    <ng-container *temPerfil="permissoes.editarCriterios">
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="editar(criterio)">Editar</button>
+                      <button type="button" class="btn btn-link btn-sm text-danger" (click)="excluindo.set(criterio)">Excluir</button>
+                    </ng-container>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-state">Nenhum critério cadastrado.</td></tr>
+            }
+          </tbody>
+          @if (criterios().length > 0) {
+            <tfoot>
+              <tr>
+                <td class="muted small" colspan="2">Soma dos pesos</td>
+                <td class="strong">{{ num(somaPesos()) }}</td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (formAberto()) {
+    <div class="modal-overlay" (click)="formAberto.set(false)">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">{{ editando() ? 'Editar critério' : 'Novo critério' }}</h2>
+          <button type="button" class="btn btn-link" (click)="formAberto.set(false)">Fechar</button>
+        </div>
+
+        <form class="form-grid" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+          <div class="field">
+            <label for="nome">Nome *</label>
+            <input id="nome" formControlName="nome" maxlength="100" />
+            @if (form.controls.nome.invalid && form.controls.nome.touched) {
+              <p class="field-error">O nome do critério é obrigatório.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" formControlName="descricao" maxlength="500"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="peso">Peso *</label>
+            <input id="peso" type="number" min="0.01" max="10" step="0.01" formControlName="peso" />
+            @if (form.controls.peso.invalid && form.controls.peso.touched) {
+              <p class="field-error">Peso inválido. Informe um valor maior que 0 e até 10.</p>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Tipo *</span>
+            <div class="radio-group">
+              @for (tipo of tipos; track tipo) {
+                <label>
+                  <input type="radio" formControlName="tipo" [value]="tipo" />
+                  {{ descricaoTipo[tipo] }}
+                </label>
+              }
+            </div>
+            <p class="field-help">Use o tipo Custo para critérios como Esforço e Risco.</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="formAberto.set(false)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || salvando()">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (excluindo(); as criterio) {
+    <app-confirm-dialog
+      titulo="Excluir critério"
+      [mensagem]="'Deseja excluir o critério ' + criterio.nome + '?'"
+      rotuloConfirmar="Excluir"
+      (confirmar)="confirmarExclusao()"
+      (cancelar)="excluindo.set(null)"
+    ></app-confirm-dialog>
+  }
+</section>

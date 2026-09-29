@@ -1,18 +1,26 @@
 <div class="login-page">
   <div class="login-card">
     <div class="login-brand">
-        <img src="/assets/icons/prumo_logo_sb.svg" > 
+      <img src="/assets/icons/prumo_logo_sb.svg" alt="Prumo" />
+      <p class="login-subtitle">Gestão de portfólio de projetos de TI</p>
     </div>
 
     <div class="login-form">
       <div class="field">
         <div class="google-signin-slot" #googleButton></div>
+        @if (entrando()) {
+          <p class="login-info">Entrando...</p>
+        }
+        @if (erro()) {
+          <p class="field-error" role="alert">{{ erro() }}</p>
+        }
         @if (!googleClientConfigured) {
           <p class="field-error">
             Configure `googleClientId` em `environment.ts` para habilitar o login com Google.
           </p>
         }
       </div>
+      <p class="login-hint">O acesso é feito somente com a conta Google cadastrada pelo administrador.</p>
     </div>
   </div>
 </div>

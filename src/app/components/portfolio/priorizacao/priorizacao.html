@@ -1,0 +1,161 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Priorização</h1>
+      <p class="page-subtitle">
+        Última priorização: <strong>{{ dataHora(resultado()?.dataUltimaPriorizacao) }}</strong>
+      </p>
+    </div>
+    @if (!encerrado()) {
+      <button type="button" class="btn btn-primary" *temPerfil="permissoes.priorizar" [disabled]="executando()" (click)="executarPriorizacao()">
+        {{ executando() ? 'Calculando...' : 'Executar priorização' }}
+      </button>
+    }
+  </header>
+
+  @if (encerrado()) {
+    <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
+  }
+
+  <nav class="tabs">
+    <button type="button" class="tab" [class.active]="aba() === 'avaliar'" (click)="aba.set('avaliar')">Avaliar</button>
+    <button type="button" class="tab" [class.active]="aba() === 'ranking'" (click)="aba.set('ranking')">Ranking</button>
+  </nav>
+
+  @switch (aba()) {
+    @case ('avaliar') {
+      <div class="card">
+        <p class="muted small" style="margin: 0 0 0.75rem">
+          Legenda: @for (n of notasPossiveis; track n) { <strong>{{ n }}</strong> = {{ legenda[n] }}@if (n < 5) {; } }
+        </p>
+        @if (matriz(); as m) {
+          @if (m.criterios.length === 0) {
+            <p class="empty-state">Cadastre ao menos um critério antes de priorizar.</p>
+          } @else {
+            <div class="table-wrap">
+              <table class="table matriz">
+                <thead>
+                  <tr>
+                    <th>Projeto</th>
+                    @for (c of m.criterios; track c.id) {
+                      <th class="col-criterio">
+                        <div>{{ c.nome }}</div>
+                        <div class="muted small">peso {{ num(c.peso) }} · {{ rotuloTipo[c.tipo] }}</div>
+                      </th>
+                    }
+                    <th>Status da avaliação</th>
+                    <th class="actions"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of m.projetos; track p.projetoId) {
+                    <tr>
+                      <td><a class="strong" [routerLink]="['/projetos', p.projetoId]">{{ p.nome }}</a></td>
+                      @for (c of m.criterios; track c.id) {
+                        <td>
+                          <select
+                            class="input nota"
+                            [value]="nota(p.projetoId, c.id)"
+                            [disabled]="!podePriorizar()"
+                            (change)="alterarNota(p.projetoId, c.id, $any($event.target).value)"
+                          >
+                            <option value="" disabled>—</option>
+                            @for (n of notasPossiveis; track n) {
+                              <option [value]="n">{{ n }} · {{ legenda[n] }}</option>
+                            }
+                          </select>
+                        </td>
+                      }
+                      <td><span [class]="badgeAvaliacao(p.statusAvaliacao)">{{ rotuloAvaliacao[p.statusAvaliacao] }}</span></td>
+                      <td class="actions">
+                        @if (podePriorizar()) {
+                          <button type="button" class="btn btn-primary btn-sm" [disabled]="!temAlteracao(p.projetoId)" (click)="salvarLinha(p.projetoId)">
+                            Salvar avaliações
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td [attr.colspan]="m.criterios.length + 3" class="empty-state">Não há projetos cadastrados para priorização.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        } @else {
+          <p class="empty-state">Carregando...</p>
+        }
+      </div>
+    }
+
+    @case ('ranking') {
+      <div class="card">
+        <h2 class="card-title">Ranking</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Posição</th>
+                <th>Projeto</th>
+                <th style="min-width: 180px">Score</th>
+                <th>Prioridade</th>
+                <th>Categoria</th>
+                <th>Avaliação</th>
+                <th class="actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of resultado()?.ranking ?? []; track item.projetoId) {
+                <tr>
+                  <td class="strong">{{ item.posicao }}º</td>
+                  <td><a class="strong" [routerLink]="['/projetos', item.projetoId]">{{ item.nome }}</a></td>
+                  <td>
+                    <div class="row" style="flex-wrap: nowrap">
+                      <div class="progress" [class]="'progress ' + corScore(item.score)" style="flex: 1">
+                        <span [style.width.%]="item.score"></span>
+                      </div>
+                      <span class="strong">{{ num(item.score) }}</span>
+                    </div>
+                  </td>
+                  <td><span [class]="badgePrioridade(item.prioridade)">{{ rotuloPrioridade[item.prioridade] }}</span></td>
+                  <td>{{ rotuloCategoria[item.categoria] }}</td>
+                  <td><span [class]="badgeAvaliacao(item.statusAvaliacao)">{{ rotuloAvaliacao[item.statusAvaliacao] }}</span></td>
+                  <td class="actions">
+                    @if (podePriorizar() && item.statusAvaliacao === 'Priorizado') {
+                      <button type="button" class="btn btn-success btn-sm" (click)="decidir(item, 'aprovar')">Aprovar</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="decidir(item, 'rejeitar')">Rejeitar</button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="empty-state">O ranking ainda não foi gerado.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Projetos não avaliados</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Projeto</th><th>Status da avaliação</th><th>Critérios que faltam</th></tr>
+            </thead>
+            <tbody>
+              @for (item of resultado()?.naoAvaliados ?? []; track item.projetoId) {
+                <tr>
+                  <td class="strong">{{ item.nome }}</td>
+                  <td><span [class]="badgeAvaliacao(item.statusAvaliacao)">{{ rotuloAvaliacao[item.statusAvaliacao] }}</span></td>
+                  <td>{{ item.criteriosFaltantes.join(', ') || '—' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="empty-state">Todos os projetos estão avaliados em todos os critérios.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</section>

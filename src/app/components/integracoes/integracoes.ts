@@ -1,280 +1,186 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter, switchMap, take, timer } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
 
-import {
-	CreateIntegrationDto,
-	Integration,
-	IntegrationsService,
-	IntegrationType,
-	UpdateIntegrationDto,
-} from '../../services/integrationsService';
+import { ROTULO_INTEGRACAO_STATUS } from '../../core/models/rotulos';
+import { mensagemDeErro } from '../../core/models/problem';
+import { IntegracaoJira, IntegracoesService, SincronizacaoLog } from '../../core/services/integracoes.service';
+import { ToastService } from '../../core/services/toast.service';
+import { badgeIntegracao, dataHora } from '../../shared/cores';
 
-const INTEGRATION_TYPES: { value: IntegrationType; label: string; supported: boolean }[] = [
-	{ value: 'Jira', label: 'Jira', supported: true },
-	{ value: 'AzureDevOps', label: 'Azure DevOps', supported: false },
-	{ value: 'GitHub', label: 'GitHub', supported: false },
-	{ value: 'Trello', label: 'Trello', supported: false },
-];
-
-const STATUS_LABELS: Record<string, string> = {
-	Success: 'Sincronizado com sucesso',
-	Unavailable: 'Indisponível',
-	AuthenticationFailed: 'Falha de autenticação',
-};
-
+/** UC15 / RF47, RF51 — configuração e teste da conexão com o Jira. */
 @Component({
-	selector: 'app-integracoes',
-	imports: [ReactiveFormsModule],
-	templateUrl: './integracoes.html',
-	styleUrl: './integracoes.css',
-	changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-integracoes',
+  imports: [ReactiveFormsModule],
+  templateUrl: './integracoes.html',
 })
 export class Integracoes {
-	private readonly fb = inject(FormBuilder);
-	private readonly integrationsService = inject(IntegrationsService);
+  private readonly service = inject(IntegracoesService);
+  private readonly toast = inject(ToastService);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
-	readonly integrationTypes = INTEGRATION_TYPES;
+  readonly rotuloStatus = ROTULO_INTEGRACAO_STATUS;
+  readonly badge = badgeIntegracao;
+  readonly dataHora = dataHora;
 
-	readonly isLoading = signal(false);
-	readonly isSaving = signal(false);
-	readonly isSyncingId = signal<string | null>(null);
-	readonly deletingId = signal<string | null>(null);
+  readonly integracao = signal<IntegracaoJira | null>(null);
+  readonly logs = signal<SincronizacaoLog[]>([]);
+  readonly salvando = signal(false);
+  readonly testando = signal(false);
+  readonly sincronizando = signal(false);
+  /** Resumo do último log depois de "Sincronizar agora". */
+  readonly resumo = signal<SincronizacaoLog | null>(null);
 
-	readonly integrations = signal<Integration[]>([]);
-	readonly feedback = signal<{ kind: 'success' | 'error'; text: string } | null>(null);
+  readonly form = this.fb.nonNullable.group({
+    url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/i), Validators.maxLength(300)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(200)]],
+    apiToken: [''],
+    intervaloSincronizacaoMinutos: [60, [Validators.required, Validators.min(15), Validators.max(1440)]],
+    ativo: [true],
+  });
 
-	readonly showForm = signal(false);
-	readonly editingIntegration = signal<Integration | null>(null);
-	readonly createSubmitted = signal(false);
+  constructor() {
+    this.carregar();
+  }
 
-	readonly pendingDeleteIntegration = signal<Integration | null>(null);
+  carregar(): void {
+    this.service.obter().subscribe({
+      next: (i) => {
+        this.aplicar(i, true);
+        if (i.status === 'Sincronizando') {
+          this.acompanharSincronizacao();
+        }
+      },
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
+    });
+    this.carregarLogs();
+  }
 
-	readonly isEditing = computed(() => this.editingIntegration() !== null);
+  /** Estado atual sem mexer no formulário (ex.: depois de um 400 RN24 a configuração fica salva). */
+  private atualizarStatus(): void {
+    this.service.obter().subscribe({ next: (i) => this.aplicar(i, false) });
+  }
 
-	readonly integrationForm = this.fb.nonNullable.group({
-		type: ['Jira' as IntegrationType, [Validators.required]],
-		apiUrl: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+[^/]$/)]],
-		token: [''],
-		syncIntervalMinutes: [60, [Validators.required, Validators.min(1)]],
-		isActive: [true],
-	});
+  carregarLogs(): void {
+    this.service.logs().subscribe({ next: (l) => this.logs.set(l) });
+  }
 
-	get controls() {
-		return this.integrationForm.controls;
-	}
+  private aplicar(i: IntegracaoJira, preencherForm: boolean): void {
+    this.integracao.set(i);
+    if (preencherForm) {
+      this.form.reset({
+        url: i.url,
+        email: i.email,
+        apiToken: '',
+        intervaloSincronizacaoMinutos: i.intervaloSincronizacaoMinutos || 60,
+        ativo: i.configurada ? i.ativo : true,
+      });
+    }
+    // Na criação o token é obrigatório; em edição, vazio = manter o atual.
+    const token = this.form.controls.apiToken;
+    token.setValidators(i.tokenConfigurado ? [] : [Validators.required]);
+    token.updateValueAndValidity();
+  }
 
-	constructor() {
-		this.loadIntegrations();
-	}
+  salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const v = this.form.getRawValue();
+    this.salvando.set(true);
+    this.service
+      .salvar({ ...v, url: v.url.trim(), email: v.email.trim(), apiToken: v.apiToken || null })
+      .subscribe({
+        next: (i) => {
+          this.salvando.set(false);
+          this.aplicar(i, true);
+          if (i.status === 'Conectada') {
+            this.toast.sucesso('Configuração salva. Conexão com o Jira estabelecida.');
+          } else {
+            this.toast.erro('Configuração salva, mas não foi possível conectar ao Jira. Verifique URL, e-mail e token.');
+          }
+        },
+        error: (e) => {
+          this.salvando.set(false);
+          this.toast.erro(mensagemDeErro(e));
+          this.atualizarStatus();
+        },
+      });
+  }
 
-	trackByIntegrationId(index: number, integration: Integration): string {
-		return integration.id ?? String(index);
-	}
+  testar(): void {
+    this.testando.set(true);
+    this.service.testar().subscribe({
+      next: (i) => {
+        this.testando.set(false);
+        this.aplicar(i, false);
+        if (i.status === 'Conectada') {
+          this.toast.sucesso('Conexão com o Jira estabelecida.');
+        } else {
+          this.toast.erro('Não foi possível conectar ao Jira. Verifique URL, e-mail e token.');
+        }
+      },
+      error: (e) => {
+        this.testando.set(false);
+        this.toast.erro(mensagemDeErro(e));
+        this.atualizarStatus();
+      },
+    });
+  }
 
-	isTypeSupported(type: IntegrationType): boolean {
-		return this.integrationTypes.find((t) => t.value === type)?.supported ?? false;
-	}
+  podeSincronizar(i: IntegracaoJira): boolean {
+    return i.status === 'Conectada' || i.status === 'FalhaSincronizacao';
+  }
 
-	getTypeLabel(type: IntegrationType): string {
-		return this.integrationTypes.find((t) => t.value === type)?.label ?? type;
-	}
+  /** UC16: dispara a sincronização (202) e acompanha o status. */
+  sincronizar(): void {
+    this.resumo.set(null);
+    this.service.sincronizar().subscribe({
+      next: (i) => {
+        this.aplicar(i, false);
+        this.acompanharSincronizacao();
+      },
+      error: (e) => {
+        this.toast.erro(mensagemDeErro(e));
+        this.atualizarStatus();
+      },
+    });
+  }
 
-	getStatusLabel(status?: string | null): string {
-		if (!status) return 'Nunca sincronizado';
-		return STATUS_LABELS[status] ?? status;
-	}
-
-	formatDate(iso?: string | null): string {
-		if (!iso) return 'Nunca sincronizado';
-		const d = new Date(iso);
-		if (Number.isNaN(d.getTime())) return '';
-		const pad = (n: number) => n.toString().padStart(2, '0');
-		return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-	}
-
-	openCreateForm(): void {
-		this.editingIntegration.set(null);
-		this.createSubmitted.set(false);
-		this.integrationForm.reset({
-			type: 'Jira',
-			apiUrl: '',
-			token: '',
-			syncIntervalMinutes: 60,
-			isActive: true,
-		});
-		this.integrationForm.controls.token.setValidators([Validators.required]);
-		this.integrationForm.controls.token.updateValueAndValidity();
-		this.integrationForm.controls.type.enable();
-		this.showForm.set(true);
-	}
-
-	openEditForm(integration: Integration): void {
-		this.editingIntegration.set(integration);
-		this.createSubmitted.set(false);
-		this.integrationForm.reset({
-			type: integration.type,
-			apiUrl: integration.apiUrl,
-			token: '',
-			syncIntervalMinutes: integration.syncIntervalMinutes,
-			isActive: integration.isActive,
-		});
-		// Token é opcional na edição — só valida se o usuário decidir preenchê-lo.
-		this.integrationForm.controls.token.clearValidators();
-		this.integrationForm.controls.token.updateValueAndValidity();
-		this.integrationForm.controls.type.disable();
-		this.showForm.set(true);
-	}
-
-	closeForm(): void {
-		this.showForm.set(false);
-		this.editingIntegration.set(null);
-		this.createSubmitted.set(false);
-	}
-
-	onSubmit(): void {
-		this.createSubmitted.set(true);
-		this.feedback.set(null);
-
-		if (this.integrationForm.invalid) {
-			this.integrationForm.markAllAsTouched();
-			return;
-		}
-
-		const editing = this.editingIntegration();
-		const values = this.integrationForm.getRawValue();
-
-		this.isSaving.set(true);
-
-		if (editing) {
-			const payload: UpdateIntegrationDto = {
-				apiUrl: values.apiUrl.trim(),
-				token: values.token?.trim() ? values.token.trim() : null,
-				isActive: values.isActive,
-				syncIntervalMinutes: values.syncIntervalMinutes,
-			};
-
-			this.integrationsService.updateIntegration(editing.id, payload).subscribe({
-				next: (updated) => {
-					this.isSaving.set(false);
-					this.integrations.update((current) =>
-						current.map((i) => (i.id === updated.id ? updated : i))
-					);
-					this.closeForm();
-					this.feedback.set({ kind: 'success', text: 'Integração atualizada com sucesso.' });
-				},
-				error: (error: HttpErrorResponse) => {
-					this.isSaving.set(false);
-					this.feedback.set({ kind: 'error', text: this.mapError(error) });
-				},
-			});
-			return;
-		}
-
-		const payload: CreateIntegrationDto = {
-			type: values.type,
-			apiUrl: values.apiUrl.trim(),
-			token: values.token.trim(),
-			syncIntervalMinutes: values.syncIntervalMinutes,
-		};
-
-		this.integrationsService.createIntegration(payload).subscribe({
-			next: (created) => {
-				this.isSaving.set(false);
-				this.integrations.update((current) => [created, ...current]);
-				this.closeForm();
-				this.feedback.set({ kind: 'success', text: 'Integração configurada com sucesso.' });
-			},
-			error: (error: HttpErrorResponse) => {
-				this.isSaving.set(false);
-				this.feedback.set({ kind: 'error', text: this.mapError(error) });
-			},
-		});
-	}
-
-	syncIntegration(integration: Integration): void {
-		this.feedback.set(null);
-		this.isSyncingId.set(integration.id);
-
-		this.integrationsService.syncIntegration(integration.id).subscribe({
-			next: () => {
-				this.isSyncingId.set(null);
-				this.feedback.set({ kind: 'success', text: 'Sincronização concluída com sucesso.' });
-				this.loadIntegrations();
-			},
-			error: (error: HttpErrorResponse) => {
-				this.isSyncingId.set(null);
-				this.feedback.set({ kind: 'error', text: this.mapError(error, 'sync') });
-				this.loadIntegrations();
-			},
-		});
-	}
-
-	requestDelete(integration: Integration): void {
-		this.pendingDeleteIntegration.set(integration);
-	}
-
-	cancelDelete(): void {
-		this.pendingDeleteIntegration.set(null);
-	}
-
-	confirmDelete(): void {
-		const integration = this.pendingDeleteIntegration();
-		if (!integration) return;
-
-		this.deletingId.set(integration.id);
-		this.integrationsService.deleteIntegration(integration.id).subscribe({
-			next: () => {
-				this.deletingId.set(null);
-				this.integrations.update((current) => current.filter((i) => i.id !== integration.id));
-				this.cancelDelete();
-				this.feedback.set({ kind: 'success', text: 'Integração removida com sucesso.' });
-			},
-			error: (error: HttpErrorResponse) => {
-				this.deletingId.set(null);
-				this.cancelDelete();
-				this.feedback.set({ kind: 'error', text: this.mapError(error) });
-			},
-		});
-	}
-
-	private loadIntegrations(): void {
-		this.isLoading.set(true);
-
-		this.integrationsService.getIntegrations().subscribe({
-			next: (integrations) => {
-				this.integrations.set(integrations);
-				this.isLoading.set(false);
-			},
-			error: () => {
-				this.integrations.set([]);
-				this.isLoading.set(false);
-				this.feedback.set({ kind: 'error', text: 'Não foi possível carregar as integrações.' });
-			},
-		});
-	}
-
-	private mapError(error: HttpErrorResponse, context: 'save' | 'sync' = 'save'): string {
-		if (error.status === 401) {
-			return context === 'sync'
-				? 'Falha de autenticação ao sincronizar. Verifique o e-mail/token configurado.'
-				: 'Credenciais rejeitadas. Confira o e-mail e o token informados.';
-		}
-
-		if (error.status === 403) {
-			return 'Você não tem permissão (role Admin) para realizar esta ação.';
-		}
-
-		if (error.status === 400) {
-			return 'Dados inválidos. Verifique o tipo, a URL e o token informados.';
-		}
-
-		if (error.status === 502) {
-			return 'Não foi possível se comunicar com o serviço externo no momento.';
-		}
-
-		return context === 'sync'
-			? 'Não foi possível sincronizar a integração no momento.'
-			: 'Não foi possível salvar a integração no momento.';
-	}
+  /** Consulta GET /integracoes/jira a cada 3 s até o status sair de Sincronizando. */
+  private acompanharSincronizacao(): void {
+    this.sincronizando.set(true);
+    timer(3000, 3000)
+      .pipe(
+        switchMap(() => this.service.obter()),
+        filter((i) => i.status !== 'Sincronizando'),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (i) => {
+          this.sincronizando.set(false);
+          this.aplicar(i, false);
+          this.service.logs().subscribe({
+            next: (logs) => {
+              this.logs.set(logs);
+              const ultimo = logs[0] ?? null;
+              this.resumo.set(ultimo);
+              if (ultimo?.sucesso) {
+                this.toast.sucesso(`Sincronização concluída: ${ultimo.issuesProcessadas} issues e ${ultimo.worklogsProcessados} worklogs.`);
+              } else if (ultimo) {
+                this.toast.erro(ultimo.mensagemErro || 'A sincronização falhou.');
+              }
+            },
+          });
+        },
+        error: (e) => {
+          this.sincronizando.set(false);
+          this.toast.erro(mensagemDeErro(e));
+        },
+      });
+  }
 }

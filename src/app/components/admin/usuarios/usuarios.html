@@ -1,0 +1,124 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Usuários</h1>
+      <p class="page-subtitle">Cadastre quem pode acessar o Prumo. O login é feito com a conta Google do e-mail cadastrado.</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="novo()">Novo usuário</button>
+  </header>
+
+  <div class="card">
+    <div class="card-header">
+      <input
+        class="input"
+        style="max-width: 320px"
+        type="search"
+        placeholder="Buscar por nome ou e-mail"
+        [value]="filtro()"
+        (input)="filtro.set($any($event.target).value)"
+      />
+    </div>
+
+    @if (carregando()) {
+      <p class="empty-state">Carregando usuários...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Perfis</th>
+              <th>Ativo</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usuario of filtrados(); track usuario.id) {
+              <tr>
+                <td class="strong">{{ usuario.nome }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                  <div class="row">
+                    @for (perfil of usuario.perfis; track perfil) {
+                      <span class="badge badge-blue">{{ rotuloRole[perfil] }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <label class="row small">
+                    <input
+                      type="checkbox"
+                      [checked]="usuario.ativo"
+                      [disabled]="ehEuMesmo(usuario) && usuario.ativo"
+                      (change)="alternarAtivo(usuario)"
+                    />
+                    {{ usuario.ativo ? 'Ativo' : 'Inativo' }}
+                  </label>
+                </td>
+                <td class="actions">
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="editar(usuario)">Editar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-state">Nenhum usuário encontrado.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (formAberto()) {
+    <div class="modal-overlay" (click)="fechar()">
+      <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <div class="card-header">
+          <h2 class="card-title">{{ editando() ? 'Editar usuário' : 'Novo usuário' }}</h2>
+          <button type="button" class="btn btn-link" (click)="fechar()">Fechar</button>
+        </div>
+
+        <form class="form-grid" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+          <div class="field">
+            <label for="nome">Nome *</label>
+            <input id="nome" formControlName="nome" />
+            @if (form.controls.nome.invalid && form.controls.nome.touched) {
+              <p class="field-error">Informe o nome.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="email">E-mail (conta Google) *</label>
+            <input id="email" type="email" formControlName="email" />
+            @if (form.controls.email.invalid && form.controls.email.touched) {
+              <p class="field-error">Informe um e-mail válido.</p>
+            }
+          </div>
+
+          <div class="field">
+            <span class="field-label">Perfis *</span>
+            <div class="check-group">
+              @for (role of roles; track role) {
+                <label>
+                  <input
+                    type="checkbox"
+                    [checked]="temPerfilSelecionado(role)"
+                    (change)="alternarPerfil(role, $any($event.target).checked)"
+                  />
+                  {{ rotuloRole[role] }}
+                </label>
+              }
+            </div>
+            @if (form.controls.perfis.invalid && form.controls.perfis.touched) {
+              <p class="field-error">Selecione ao menos um perfil.</p>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="fechar()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || salvando()">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

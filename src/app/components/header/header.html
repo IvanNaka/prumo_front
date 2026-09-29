@@ -1,24 +1,61 @@
 <header class="app-header">
-  <h1 class="app-title">{{ title() }}</h1>
-
-  <div class="user-menu">
-    <button
-      class="user-button"
-      type="button"
-      aria-label="User menu"
-      [attr.aria-expanded]="showUserMenu()"
-      aria-haspopup="menu"
-      (click)="toggleUserMenu()"
-    >
-      <img src="\assets\icons\user_icon.svg" alt="Ícone do usuário" class="user-icon" width="20" height="20">
-    </button>
-
-    @if (showUserMenu()) {
-      <div class="user-menu-panel" role="menu">
-        <button type="button" class="user-menu-item" role="menuitem" (click)="logout()">
-          Sair
-        </button>
+  <div class="header-left">
+    <h1 class="app-title">{{ title() }}</h1>
+    @if (portfolioAtivo(); as p) {
+      <div class="portfolio-ativo" title="Portfólio ativo">
+        <span class="portfolio-ativo-label">Portfólio:</span>
+        <a class="portfolio-ativo-nome" [routerLink]="['/portfolios', p.id, 'visao-geral']">{{ p.nome }}</a>
+        <a class="portfolio-trocar" routerLink="/portfolios">Trocar</a>
       </div>
     }
+  </div>
+
+  <div class="header-right">
+    <ng-content></ng-content>
+
+    <a
+      class="user-button bell-button"
+      routerLink="/notificacoes"
+      [attr.aria-label]="'Notificações' + (naoLidas() ? ': ' + naoLidas() + ' não lida(s)' : '')"
+      title="Notificações"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      @if (naoLidas() > 0) {
+        <span class="bell-count">{{ naoLidas() > 99 ? '99+' : naoLidas() }}</span>
+      }
+    </a>
+
+    <div class="user-menu">
+      <button
+        class="user-button"
+        type="button"
+        aria-label="Menu do usuário"
+        [attr.aria-expanded]="showUserMenu()"
+        aria-haspopup="menu"
+        (click)="toggleUserMenu()"
+      >
+        <img src="/assets/icons/user_icon.svg" alt="" class="user-icon" width="20" height="20" />
+      </button>
+
+      @if (showUserMenu()) {
+        <div class="user-menu-panel" role="menu">
+          @if (usuario(); as u) {
+            <div class="user-info">
+              <strong>{{ u.nome }}</strong>
+              <span>{{ u.email }}</span>
+              <span class="user-perfis">
+                @for (perfil of u.perfis; track perfil) {
+                  <span class="badge badge-gray">{{ rotuloRole[perfil] }}</span>
+                }
+              </span>
+            </div>
+          }
+          <button type="button" class="user-menu-item" role="menuitem" (click)="logout()">Sair</button>
+        </div>
+      }
+    </div>
   </div>
 </header>

@@ -1,0 +1,202 @@
+@if (portfolio(); as p) {
+  <section class="page">
+    <header class="page-header">
+      <div>
+        <div class="row">
+          <span [class]="badge(p.status)">{{ rotuloStatus[p.status] }}</span>
+        </div>
+        <h1>{{ p.nome }}</h1>
+        <p class="page-subtitle">Responsável: <strong>{{ p.responsavelNome }}</strong> · criado em {{ data(p.dataCriacao) }}</p>
+      </div>
+
+      @if (!encerrado()) {
+        <div class="row">
+          @for (acao of acoes(); track acao) {
+            <button
+              type="button"
+              class="btn"
+              [class.btn-danger]="acao === 'encerrar'"
+              [class.btn-primary]="acao !== 'encerrar'"
+              *temPerfil="permissoes.governarPortfolio"
+              (click)="solicitarAcao(acao)"
+            >
+              {{ rotuloAcao[acao] }}
+            </button>
+          }
+          <button type="button" class="btn btn-secondary" *temPerfil="permissoes.editarPortfolio" (click)="editando.set(true)">
+            Editar
+          </button>
+        </div>
+      }
+    </header>
+
+    @if (encerrado()) {
+      <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
+    }
+
+    <nav class="tabs">
+      <button type="button" class="tab" [class.active]="aba() === 'resumo'" (click)="abrirAba('resumo')">Resumo</button>
+      @if (podeGerirMembros()) {
+        <button type="button" class="tab" [class.active]="aba() === 'membros'" (click)="abrirAba('membros')">Membros</button>
+      }
+    </nav>
+
+    @switch (aba()) {
+      @case ('resumo') {
+        <div class="grid-2">
+          <div class="card">
+            <h2 class="card-title">Objetivo do portfólio</h2>
+            <p class="page-subtitle">{{ p.objetivo || 'Não informado.' }}</p>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Descrição</h2>
+            <p class="page-subtitle">{{ p.descricao || 'Não informada.' }}</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card kpi">
+            <span class="kpi-label">Projetos</span>
+            <span class="kpi-value">{{ p.quantidadeProjetos }}</span>
+          </div>
+          <div class="card kpi">
+            <span class="kpi-label">Critérios de priorização</span>
+            <span class="kpi-value">{{ p.quantidadeCriterios }}</span>
+          </div>
+          <div class="card kpi">
+            <span class="kpi-label">Membros</span>
+            <span class="kpi-value">{{ p.quantidadeMembros }}</span>
+          </div>
+        </div>
+
+        <app-okr-associacoes
+          titulo="OKRs do portfólio"
+          vazio="Nenhum OKR associado ao portfólio."
+          [associados]="okrs()"
+          [editavel]="!encerrado()"
+          (associar)="associarOkr($event)"
+          (desassociar)="desassociarOkr($event)"
+        ></app-okr-associacoes>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Projetos</h2>
+              <a class="btn btn-link" [routerLink]="['/portfolios', p.id, 'projetos']">Ver todos</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Projeto</th><th>Responsável</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @for (projeto of projetos(); track projeto.id) {
+                    <tr class="clickable" [routerLink]="['/projetos', projeto.id]">
+                      <td class="strong">{{ projeto.nome }}</td>
+                      <td>{{ projeto.responsavelNome }}</td>
+                      <td><span [class]="badgeProjeto(projeto.status)">{{ rotuloProjeto[projeto.status] }}</span></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="3" class="empty-state">Nenhum projeto cadastrado.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Critérios de priorização</h2>
+              <a class="btn btn-link" [routerLink]="['/portfolios', p.id, 'criterios']">Gerenciar</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Critério</th><th>Peso</th><th>Tipo</th></tr>
+                </thead>
+                <tbody>
+                  @for (criterio of criterios(); track criterio.id) {
+                    <tr>
+                      <td class="strong">{{ criterio.nome }}</td>
+                      <td>{{ num(criterio.peso) }}</td>
+                      <td>{{ criterio.tipo ? rotuloTipo[criterio.tipo] : '—' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="3" class="empty-state">Nenhum critério cadastrado.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+      @case ('membros') {
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Membros do portfólio</h2>
+            @if (!encerrado()) {
+              <div class="row">
+                <select class="input" style="min-width: 260px" [value]="novoMembroId()" (change)="novoMembroId.set($any($event.target).value)">
+                  <option value="">Selecione um usuário</option>
+                  @for (usuario of candidatos(); track usuario.id) {
+                    <option [value]="usuario.id">{{ usuario.nome }} ({{ usuario.email }})</option>
+                  }
+                </select>
+                <button type="button" class="btn btn-primary" [disabled]="!novoMembroId()" (click)="adicionarMembro()">Adicionar</button>
+              </div>
+            }
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Nome</th><th>E-mail</th><th>Perfis</th><th class="actions"></th></tr>
+              </thead>
+              <tbody>
+                @for (membro of membros(); track membro.usuarioId) {
+                  <tr>
+                    <td class="strong">
+                      {{ membro.nome }}
+                      @if (membro.responsavel) {
+                        <span class="badge badge-blue">Responsável</span>
+                      }
+                    </td>
+                    <td>{{ membro.email }}</td>
+                    <td>
+                      <div class="row">
+                        @for (perfil of membro.perfis; track perfil) {
+                          <span class="badge badge-gray">{{ rotuloRole[perfil] }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td class="actions">
+                      @if (!membro.responsavel && !encerrado()) {
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="removerMembro(membro)">Remover</button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="empty-state">Nenhum membro.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+
+    @if (editando()) {
+      <app-portfolio-form [portfolio]="p" (salvo)="salvo($event)" (fechar)="editando.set(false)"></app-portfolio-form>
+    }
+
+    @if (acaoPendente() === 'encerrar') {
+      <app-confirm-dialog
+        titulo="Encerrar portfólio"
+        mensagem="Depois de encerrado, o portfólio fica somente para leitura. Deseja continuar?"
+        rotuloConfirmar="Encerrar portfólio"
+        (confirmar)="executarAcao('encerrar')"
+        (cancelar)="acaoPendente.set(null)"
+      ></app-confirm-dialog>
+    }
+  </section>
+} @else {
+  <div class="card empty-state">Carregando portfólio...</div>
+}

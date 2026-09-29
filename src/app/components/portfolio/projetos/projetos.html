@@ -1,0 +1,83 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Projetos</h1>
+      <p class="page-subtitle">Projetos do portfólio, ordenados pela posição no ranking.</p>
+    </div>
+    @if (!encerrado()) {
+      <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarProjetos" (click)="formAberto.set(true)">
+        Novo projeto
+      </button>
+    }
+  </header>
+
+  @if (encerrado()) {
+    <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
+  }
+
+  <div class="card">
+    <div class="card-header">
+      <div class="row">
+        <label class="field-label" for="fStatus">Status</label>
+        <select id="fStatus" class="input" style="width: auto" [value]="filtroStatus()" (change)="filtrarStatus($any($event.target).value)">
+          <option value="">Todos</option>
+          @for (status of statusList; track status) {
+            <option [value]="status">{{ rotuloStatus[status] }}</option>
+          }
+        </select>
+        <label class="field-label" for="fCategoria">Categoria</label>
+        <select id="fCategoria" class="input" style="width: auto" [value]="filtroCategoria()" (change)="filtrarCategoria($any($event.target).value)">
+          <option value="">Todas</option>
+          @for (categoria of categorias; track categoria) {
+            <option [value]="categoria">{{ rotuloCategoria[categoria] }}</option>
+          }
+        </select>
+      </div>
+      <span class="muted small">{{ projetos().length }} projeto(s)</span>
+    </div>
+
+    @if (carregando()) {
+      <p class="empty-state">Carregando projetos...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Projeto</th>
+              <th>Responsável</th>
+              <th>Categoria</th>
+              <th>Status</th>
+              <th>Prioridade</th>
+              <th>Score</th>
+              <th class="text-right">Orçamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (projeto of projetos(); track projeto.id) {
+              <tr class="clickable" (click)="abrir(projeto)">
+                <td class="strong">{{ projeto.posicaoRanking ?? '—' }}</td>
+                <td>
+                  <div class="strong">{{ projeto.nome }}</div>
+                  <div class="muted small">{{ rotuloAvaliacao[projeto.statusAvaliacao] }}</div>
+                </td>
+                <td>{{ projeto.responsavelNome }}</td>
+                <td><span class="badge badge-purple">{{ rotuloCategoria[projeto.categoriaEstrategica] }}</span></td>
+                <td><span [class]="badgeProjeto(projeto.status)">{{ rotuloStatus[projeto.status] }}</span></td>
+                <td><span [class]="badgePrioridade(projeto.prioridade)">{{ rotuloPrioridade[projeto.prioridade] }}</span></td>
+                <td>{{ projeto.scoreAtual !== null ? num(projeto.scoreAtual) : '—' }}</td>
+                <td class="text-right nowrap">{{ brl(projeto.orcamentoAprovado) }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="empty-state">Nenhum projeto encontrado.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (formAberto() && portfolioId()) {
+    <app-projeto-form [portfolioId]="portfolioId()!" (salvo)="criado($event)" (fechar)="formAberto.set(false)"></app-projeto-form>
+  }
+</section>

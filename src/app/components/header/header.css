@@ -64,3 +64,62 @@
 .user-menu-item:hover {
 	background: #F3F4F6;
 }
+
+.header-left,
+.header-right {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	min-width: 0;
+}
+
+.portfolio-ativo {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.35rem 0.75rem;
+	border-radius: 999px;
+	background: #eff6ff;
+	font-size: 0.85rem;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.portfolio-ativo-label { color: #64748b; font-weight: 600; }
+.portfolio-ativo-nome { color: #1d4ed8; font-weight: 800; text-decoration: none; overflow: hidden; text-overflow: ellipsis; }
+.portfolio-trocar { color: #475569; font-weight: 700; text-decoration: underline; }
+
+.user-info {
+	display: grid;
+	gap: 0.2rem;
+	padding: 0.6rem 0.85rem;
+	border-bottom: 1px solid #E5E7EB;
+	margin-bottom: 0.25rem;
+	font-size: 0.85rem;
+	color: #475569;
+	min-width: 14rem;
+}
+
+.user-info strong { color: #111827; }
+.user-perfis { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
+
+.bell-button {
+	position: relative;
+	text-decoration: none;
+}
+
+.bell-count {
+	position: absolute;
+	top: -0.25rem;
+	right: -0.25rem;
+	min-width: 1.15rem;
+	height: 1.15rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	background: #dc2626;
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.15rem;
+	text-align: center;
+}

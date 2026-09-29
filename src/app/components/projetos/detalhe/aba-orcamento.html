@@ -1,0 +1,119 @@
+@if (burnRate(); as b) {
+  @if (b.estouro) {
+    <div class="alert alert-danger">Estouro de orçamento: o custo realizado já passou do orçamento aprovado.</div>
+  } @else if (b.riscoEstouro) {
+    <div class="alert alert-warning">Risco de estouro: no ritmo atual, a projeção de custo passa do orçamento aprovado.</div>
+  }
+
+  @if (!b.disponivel) {
+    <div class="alert alert-info">{{ b.motivo || rn18 }}</div>
+  }
+
+  <div class="grid-3">
+    <div class="card kpi">
+      <span class="kpi-label">Orçamento aprovado</span>
+      <span class="kpi-value">{{ brl(b.orcamentoAprovado) }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Custo realizado</span>
+      <span class="kpi-value">{{ brl(b.custoRealizado) }}</span>
+      <span class="muted small">Horas: {{ brl(b.custoHoras) }} · Lançamentos: {{ brl(b.custoLancamentos) }}</span>
+      @if (b.horasSemCusto > 0) {
+        <span class="muted small">{{ num(b.horasSemCusto) }} h sem membro correspondente (custo 0)</span>
+      }
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Saldo</span>
+      <span class="kpi-value" [class.text-danger]="b.saldo < 0">{{ brl(b.saldo) }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">% consumido</span>
+      <span class="kpi-value">{{ b.percentualConsumido !== null ? num(b.percentualConsumido) + '%' : '—' }}</span>
+      <div class="progress" [class.red]="b.estouro" [class.yellow]="!b.estouro && b.riscoEstouro">
+        <span [style.width.%]="largura(b.percentualConsumido)"></span>
+      </div>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Burn rate mensal</span>
+      <span class="kpi-value">{{ brl(b.burnRateMensal) }}</span>
+      <span class="muted small">{{ num(b.mesesDecorridos) }} de {{ num(b.duracaoMeses) }} meses</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Projeção do custo total</span>
+      <span class="kpi-value" [class.text-warning]="b.riscoEstouro">{{ brl(b.projecaoCustoTotal) }}</span>
+    </div>
+  </div>
+}
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Lançamentos</h2>
+    @if (editavel()) {
+      <button type="button" class="btn btn-primary btn-sm" *temPerfil="permissoes.editarFinanceiro" (click)="novo()">Novo lançamento</button>
+    }
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th class="text-right">Valor</th><th class="actions"></th></tr>
+      </thead>
+      <tbody>
+        @for (l of lancamentos(); track l.id) {
+          <tr>
+            <td class="nowrap">{{ data(l.dataLancamento) }}</td>
+            <td>{{ l.descricao }}</td>
+            <td><span class="badge badge-gray">{{ rotuloTipo[l.tipo] }}</span></td>
+            <td class="text-right nowrap">{{ brl(l.valor) }}</td>
+            <td class="actions">
+              @if (editavel()) {
+                <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarFinanceiro" (click)="excluir(l)">Excluir</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="empty-state">Nenhum lançamento registrado.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (formAberto()) {
+  <div class="modal-overlay" (click)="formAberto.set(false)">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="card-header">
+        <h2 class="card-title">Novo lançamento</h2>
+        <button type="button" class="btn btn-link" (click)="formAberto.set(false)">Fechar</button>
+      </div>
+      <form class="form-grid cols-2" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+        <div class="field full">
+          <label for="desc">Descrição *</label>
+          <input id="desc" formControlName="descricao" maxlength="300" />
+        </div>
+        <div class="field">
+          <label for="valor">Valor (R$) *</label>
+          <input id="valor" type="number" min="0.01" step="0.01" formControlName="valor" />
+          @if (form.controls.valor.invalid && form.controls.valor.touched) {
+            <p class="field-error">O valor deve ser positivo.</p>
+          }
+        </div>
+        <div class="field">
+          <label for="data">Data *</label>
+          <input id="data" type="date" [max]="hoje" formControlName="dataLancamento" />
+        </div>
+        <div class="field full">
+          <span class="field-label">Tipo *</span>
+          <div class="radio-group">
+            @for (tipo of tipos; track tipo) {
+              <label><input type="radio" formControlName="tipo" [value]="tipo" /> {{ rotuloTipo[tipo] }}</label>
+            }
+          </div>
+        </div>
+        <div class="form-actions field full">
+          <button type="button" class="btn btn-secondary" (click)="formAberto.set(false)">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || salvando()">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

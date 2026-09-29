@@ -1,26 +1,38 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, input, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timer } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
 
-import { AuthService } from '../../services/auth.service';
-import { CurrentUserService } from '../../services/current-user.service';
-import { TeamAccessService } from '../../services/team-access.service';
+import { ROTULO_ROLE } from '../../core/models/rotulos';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificacoesService } from '../../core/services/notificacoes.service';
+import { PortfolioContextService } from '../../core/services/portfolio-context.service';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule],
+  imports: [RouterLink],
   templateUrl: './header.html',
   styleUrl: './header.css',
-  standalone: true
 })
 export class Header {
   private readonly authService = inject(AuthService);
-  private readonly currentUserService = inject(CurrentUserService);
-  private readonly teamAccessService = inject(TeamAccessService);
+  private readonly contexto = inject(PortfolioContextService);
   private readonly router = inject(Router);
 
-  title = input<string>('');
+  readonly title = input<string>('');
   readonly showUserMenu = signal(false);
+  readonly usuario = this.authService.usuario;
+  readonly portfolioAtivo = this.contexto.ativo;
+  readonly rotuloRole = ROTULO_ROLE;
+  readonly naoLidas = inject(NotificacoesService).naoLidas;
+
+  constructor() {
+    // Contagem de não lidas atualizada a cada 60 segundos.
+    const notificacoes = inject(NotificacoesService);
+    timer(0, 60_000)
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(() => notificacoes.atualizarContagem());
+  }
 
   toggleUserMenu(): void {
     this.showUserMenu.update((value) => !value);
@@ -31,9 +43,8 @@ export class Header {
   }
 
   logout(): void {
-    this.authService.clearToken();
-    this.currentUserService.clearCache();
-    this.teamAccessService.clearCache();
+    this.authService.logout();
+    this.contexto.limpar();
     this.closeUserMenu();
     void this.router.navigate(['/login']);
   }

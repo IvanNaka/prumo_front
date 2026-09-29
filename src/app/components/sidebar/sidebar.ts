@@ -1,54 +1,64 @@
-import { Component, computed, inject, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
-import { TeamAccessService } from '../../services/team-access.service';
+import { Role } from '../../core/models/enums';
+import { PERMISSOES, TODOS } from '../../core/models/permissoes';
+import { AuthService } from '../../core/services/auth.service';
+import { PortfolioContextService } from '../../core/services/portfolio-context.service';
 
 interface MenuItem {
-  id: string;
+  rota: string | string[];
   icon: string;
   label: string;
+  /** Perfis que podem VER o recurso (Seção 3.6). */
+  perfis: readonly Role[];
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule],
+  imports: [RouterLink, RouterLinkActive, NgTemplateOutlet],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
-  standalone: true
 })
 export class Sidebar {
-  private readonly teamAccessService = inject(TeamAccessService);
+  private readonly authService = inject(AuthService);
+  private readonly contexto = inject(PortfolioContextService);
 
-  activeItem = input<string>('dashboard');
-  onNavigate = output<string>();
+  readonly portfolioAtivo = this.contexto.ativo;
 
-  private readonly allMenuItems: MenuItem[] = [
-    { id: 'dashboard', icon: 'home', label: 'Dashboard' },
-    { id: 'portfolios', icon: 'portfolio', label: 'Portfólios' },
-    { id: 'projetos', icon: 'folder-open', label: 'Projetos' },
-    { id: 'dependencias', icon: 'link', label: 'Dependências' },
-    { id: 'roadmap', icon: 'target', label: 'Roadmap' },
-    { id: 'times', icon: 'team', label: 'Times' },
-    { id: 'integracoes', icon: 'integration', label: 'Integrações' },
-    // { id: 'okrs', icon: 'target', label: 'OKRs' },
-    // { id: 'relatorios', icon: 'bar-chart-3', label: 'Relatórios' },
-    // { id: 'configuracoes', icon: 'settings', label: 'Configurações' },
+  private readonly itensGerais: MenuItem[] = [
+    { rota: '/portfolios', icon: 'portfolio', label: 'Portfólios', perfis: TODOS },
+    { rota: '/okrs', icon: 'target', label: 'OKRs', perfis: TODOS },
+    { rota: '/equipes', icon: 'team', label: 'Equipes', perfis: TODOS },
+    { rota: '/notificacoes', icon: 'bell', label: 'Notificações', perfis: TODOS },
+    { rota: '/integracoes/jira', icon: 'integration', label: 'Integração Jira', perfis: PERMISSOES.integracoes },
+    { rota: '/admin/usuarios', icon: 'settings', label: 'Usuários', perfis: PERMISSOES.gerirUsuarios },
   ];
 
-  /**
-   * Enquanto o usuário não pertencer a nenhum time, o menu só mostra a opção
-   * "Times" — o resto das páginas fica bloqueado pelo `teamRequiredGuard`.
-   */
-  readonly menuItems = computed(() => {
-    if (this.teamAccessService.hasTeam() === false) {
-      return this.allMenuItems.filter((item) => item.id === 'times');
+  /** Itens que dependem do portfólio ativo (UC3). */
+  readonly itensPortfolio = computed<MenuItem[]>(() => {
+    this.authService.perfis();
+    const id = this.contexto.ativoId();
+    if (!id) {
+      return [];
     }
-
-    return this.allMenuItems;
+    const base = ['/portfolios', id];
+    const itens: MenuItem[] = [
+      { rota: [...base, 'visao-geral'], icon: 'portfolio', label: 'Visão geral', perfis: TODOS },
+      { rota: [...base, 'dashboard'], icon: 'home', label: 'Dashboard', perfis: TODOS },
+      { rota: [...base, 'criterios'], icon: 'bar-chart-3', label: 'Critérios', perfis: TODOS },
+      { rota: [...base, 'projetos'], icon: 'folder-open', label: 'Projetos', perfis: TODOS },
+      { rota: [...base, 'priorizacao'], icon: 'target', label: 'Priorização', perfis: TODOS },
+      { rota: [...base, 'dependencias'], icon: 'link', label: 'Dependências', perfis: TODOS },
+      { rota: [...base, 'relatorios'], icon: 'bar-chart-3', label: 'Relatórios', perfis: PERMISSOES.verRelatorios },
+    ];
+    return itens.filter((item) => this.authService.temPerfil(item.perfis));
   });
 
-  handleNavigate(id: string) {
-    this.onNavigate.emit(id);
-  }
-
+  /** Cada item aparece somente para os perfis que podem ver aquele recurso. */
+  readonly menuItems = computed(() => {
+    this.authService.perfis();
+    return this.itensGerais.filter((item) => this.authService.temPerfil(item.perfis));
+  });
 }
