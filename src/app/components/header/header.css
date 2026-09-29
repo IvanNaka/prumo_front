@@ -102,3 +102,24 @@
 
 .user-info strong { color: #111827; }
 .user-perfis { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
+
+.bell-button {
+	position: relative;
+	text-decoration: none;
+}
+
+.bell-count {
+	position: absolute;
+	top: -0.25rem;
+	right: -0.25rem;
+	min-width: 1.15rem;
+	height: 1.15rem;
+	padding: 0 0.3rem;
+	border-radius: 999px;
+	background: #dc2626;
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.15rem;
+	text-align: center;
+}

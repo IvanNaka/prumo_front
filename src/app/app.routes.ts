@@ -6,7 +6,6 @@ import { roleGuard } from './core/guards/role.guard';
 import { PERMISSOES } from './core/models/permissoes';
 import { Usuarios } from './components/admin/usuarios/usuarios';
 import { Dependencias } from './components/portfolio/dependencias/dependencias';
-import { Integracoes } from './components/integracoes/integracoes';
 import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
@@ -56,10 +55,15 @@ export const routes: Routes = [
       { path: 'projetos/:id', component: ProjetoDetalhePage, data: { titulo: 'Projeto' } },
       { path: 'equipes', component: Equipes, data: { titulo: 'Equipes' } },
       { path: 'equipes/:id/capacidade', component: CapacidadeEquipe, data: { titulo: 'Capacidade da equipe' } },
+      {
+        path: 'notificacoes',
+        loadComponent: () => import('./components/notificacoes/notificacoes').then((m) => m.Notificacoes),
+        data: { titulo: 'Notificações' },
+      },
       { path: 'okrs', component: Okrs, data: { titulo: 'OKRs' } },
       {
         path: 'integracoes/jira',
-        component: Integracoes,
+        loadComponent: () => import('./components/integracoes/integracoes').then((m) => m.Integracoes),
         canActivate: [roleGuard(PERMISSOES.integracoes)],
         data: { titulo: 'Integração Jira' },
       },

@@ -1,0 +1,64 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Notificações</h1>
+      <p class="page-subtitle">Avisos automáticos de atraso, risco, conflito de capacidade, desalinhamento e estouro de orçamento.</p>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" [value]="filtroStatus()" (change)="filtrarStatus($any($event.target).value)">
+          <option value="">Enviadas, lidas e ignoradas</option>
+          @for (s of statusDisponiveis; track s) {
+            <option [value]="s">{{ rotuloStatus[s] }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="tipo">Tipo</label>
+        <select id="tipo" [value]="filtroTipo()" (change)="filtrarTipo($any($event.target).value)">
+          <option value="">Todos</option>
+          @for (t of tipos; track t) {
+            <option [value]="t">{{ rotuloTipo[t] }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </header>
+
+  @if (carregando()) {
+    <div class="card empty-state">Carregando notificações...</div>
+  } @else {
+    <div class="card notification-list">
+      @for (n of itens(); track n.id) {
+        <article class="notification" [class.unread]="n.status === 'Enviada'">
+          <span class="notification-icon" [class]="'notification-icon ' + icones[n.tipo].classe" [attr.title]="rotuloTipo[n.tipo]" aria-hidden="true">
+            {{ icones[n.tipo].simbolo }}
+          </span>
+          <div class="notification-body">
+            <div class="row small">
+              <span class="strong">{{ rotuloTipo[n.tipo] }}</span>
+              <span [class]="badge(n.status)">{{ rotuloStatus[n.status] }}</span>
+              <span class="muted">{{ dataHora(n.dataEnvio || n.dataCriacao) }}</span>
+            </div>
+            @if (link(n)) {
+              <button type="button" class="btn btn-link notification-message" (click)="abrir(n)">{{ n.mensagem }}</button>
+            } @else {
+              <p class="notification-message">{{ n.mensagem }}</p>
+            }
+          </div>
+          <div class="row notification-actions">
+            @if (n.status === 'Enviada') {
+              <button type="button" class="btn btn-secondary btn-sm" (click)="marcarLida(n)">Marcar como lida</button>
+            }
+            @if (n.status === 'Lida' || n.status === 'Ignorada') {
+              <button type="button" class="btn btn-link btn-sm" (click)="arquivar(n)">Arquivar</button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-state">Nenhuma notificação.</p>
+      }
+    </div>
+  }
+</section>
