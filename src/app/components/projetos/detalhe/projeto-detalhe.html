@@ -41,6 +41,7 @@
       <button type="button" class="tab" [class.active]="aba() === 'resumo'" (click)="aba.set('resumo')">Resumo</button>
       <button type="button" class="tab" [class.active]="aba() === 'avaliacao'" (click)="aba.set('avaliacao')">Avaliação</button>
       <button type="button" class="tab" [class.active]="aba() === 'okrs'" (click)="aba.set('okrs')">OKRs</button>
+      <button type="button" class="tab" [class.active]="aba() === 'dependencias'" (click)="aba.set('dependencias')">Dependências</button>
       @if (veFinanceiro()) {
         <button type="button" class="tab" [class.active]="aba() === 'orcamento'" (click)="aba.set('orcamento')">Orçamento</button>
         <button type="button" class="tab" [class.active]="aba() === 'business-case'" (click)="aba.set('business-case')">Business case</button>
@@ -111,6 +112,15 @@
       }
       @case ('business-case') {
         <app-aba-business-case [projetoId]="p.id" [editavel]="!portfolioEncerrado()"></app-aba-business-case>
+      }
+      @case ('dependencias') {
+        <app-aba-dependencias
+          [projetoId]="p.id"
+          [portfolioId]="p.portfolioId"
+          [dependencias]="p.dependencias"
+          [editavel]="!portfolioEncerrado()"
+          (alterado)="carregar()"
+        ></app-aba-dependencias>
       }
       @case ('okrs') {
         <app-okr-associacoes

@@ -40,6 +40,7 @@ export interface ProjetoDetalhe extends ProjetoResumo {
   acoesPermitidas: AcaoProjeto[];
   avaliacoes: NotaCriterio[];
   okrs: { id: string; titulo: string; progresso: number }[];
+  dependencias: import('../services/dependencias.service').Dependencia[];
 }
 
 export interface SalvarProjeto {

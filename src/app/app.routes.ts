@@ -6,7 +6,7 @@ import { roleGuard } from './core/guards/role.guard';
 import { PERMISSOES } from './core/models/permissoes';
 import { Usuarios } from './components/admin/usuarios/usuarios';
 import { Dashboard } from './components/dashboard/dashboard';
-import { Dependencias } from './components/dependencias/dependencias';
+import { Dependencias } from './components/portfolio/dependencias/dependencias';
 import { Integracoes } from './components/integracoes/integracoes';
 import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';

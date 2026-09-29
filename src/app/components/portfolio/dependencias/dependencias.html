@@ -1,0 +1,71 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Dependências</h1>
+      <p class="page-subtitle">
+        {{ dependencias().length }} dependência(s) · <strong [class.text-danger]="emRisco() > 0">{{ emRisco() }} em risco</strong>
+      </p>
+    </div>
+    @if (!encerrado()) {
+      <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarDependencias" (click)="formAberto.set(true)">
+        Nova dependência
+      </button>
+    }
+  </header>
+
+  <div class="card">
+    @if (carregando()) {
+      <p class="empty-state">Carregando dependências...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Origem (depende de)</th>
+              <th></th>
+              <th>Destino</th>
+              <th>Descrição</th>
+              <th>Risco</th>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of dependencias(); track d.id) {
+              <tr>
+                <td>
+                  <a class="strong" [routerLink]="['/projetos', d.projetoOrigemId]">{{ d.projetoOrigemNome }}</a>
+                  <div><span [class]="badgeProjeto(d.projetoOrigemStatus)">{{ rotuloStatus[d.projetoOrigemStatus] }}</span></div>
+                </td>
+                <td class="muted">→</td>
+                <td>
+                  <a class="strong" [routerLink]="['/projetos', d.projetoDestinoId]">{{ d.projetoDestinoNome }}</a>
+                  <div><span [class]="badgeProjeto(d.projetoDestinoStatus)">{{ rotuloStatus[d.projetoDestinoStatus] }}</span></div>
+                </td>
+                <td class="muted">{{ d.descricao || '—' }}</td>
+                <td>
+                  @if (d.emRisco) {
+                    <span class="badge badge-red" [title]="d.motivo">Em risco</span>
+                    <div class="small text-danger">{{ d.motivo }}</div>
+                  } @else {
+                    <span class="badge badge-green">OK</span>
+                  }
+                </td>
+                <td class="actions">
+                  @if (!encerrado()) {
+                    <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarDependencias" (click)="excluir(d)">Remover</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-state">Nenhuma dependência cadastrada.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (formAberto() && portfolioId()) {
+    <app-nova-dependencia [portfolioId]="portfolioId()!" (salvo)="salvo()" (fechar)="formAberto.set(false)"></app-nova-dependencia>
+  }
+</section>
