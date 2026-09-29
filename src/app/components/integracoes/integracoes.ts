@@ -1,4 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter, switchMap, take, timer } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ROTULO_INTEGRACAO_STATUS } from '../../core/models/rotulos';
@@ -17,6 +19,7 @@ export class Integracoes {
   private readonly service = inject(IntegracoesService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly rotuloStatus = ROTULO_INTEGRACAO_STATUS;
   readonly badge = badgeIntegracao;
@@ -26,6 +29,9 @@ export class Integracoes {
   readonly logs = signal<SincronizacaoLog[]>([]);
   readonly salvando = signal(false);
   readonly testando = signal(false);
+  readonly sincronizando = signal(false);
+  /** Resumo do último log depois de "Sincronizar agora". */
+  readonly resumo = signal<SincronizacaoLog | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/i), Validators.maxLength(300)]],
@@ -41,10 +47,20 @@ export class Integracoes {
 
   carregar(): void {
     this.service.obter().subscribe({
-      next: (i) => this.aplicar(i, true),
+      next: (i) => {
+        this.aplicar(i, true);
+        if (i.status === 'Sincronizando') {
+          this.acompanharSincronizacao();
+        }
+      },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
     this.carregarLogs();
+  }
+
+  /** Estado atual sem mexer no formulário (ex.: depois de um 400 RN24 a configuração fica salva). */
+  private atualizarStatus(): void {
+    this.service.obter().subscribe({ next: (i) => this.aplicar(i, false) });
   }
 
   carregarLogs(): void {
@@ -90,6 +106,7 @@ export class Integracoes {
         error: (e) => {
           this.salvando.set(false);
           this.toast.erro(mensagemDeErro(e));
+          this.atualizarStatus();
         },
       });
   }
@@ -109,7 +126,61 @@ export class Integracoes {
       error: (e) => {
         this.testando.set(false);
         this.toast.erro(mensagemDeErro(e));
+        this.atualizarStatus();
       },
     });
+  }
+
+  podeSincronizar(i: IntegracaoJira): boolean {
+    return i.status === 'Conectada' || i.status === 'FalhaSincronizacao';
+  }
+
+  /** UC16: dispara a sincronização (202) e acompanha o status. */
+  sincronizar(): void {
+    this.resumo.set(null);
+    this.service.sincronizar().subscribe({
+      next: (i) => {
+        this.aplicar(i, false);
+        this.acompanharSincronizacao();
+      },
+      error: (e) => {
+        this.toast.erro(mensagemDeErro(e));
+        this.atualizarStatus();
+      },
+    });
+  }
+
+  /** Consulta GET /integracoes/jira a cada 3 s até o status sair de Sincronizando. */
+  private acompanharSincronizacao(): void {
+    this.sincronizando.set(true);
+    timer(3000, 3000)
+      .pipe(
+        switchMap(() => this.service.obter()),
+        filter((i) => i.status !== 'Sincronizando'),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (i) => {
+          this.sincronizando.set(false);
+          this.aplicar(i, false);
+          this.service.logs().subscribe({
+            next: (logs) => {
+              this.logs.set(logs);
+              const ultimo = logs[0] ?? null;
+              this.resumo.set(ultimo);
+              if (ultimo?.sucesso) {
+                this.toast.sucesso(`Sincronização concluída: ${ultimo.issuesProcessadas} issues e ${ultimo.worklogsProcessados} worklogs.`);
+              } else if (ultimo) {
+                this.toast.erro(ultimo.mensagemErro || 'A sincronização falhou.');
+              }
+            },
+          });
+        },
+        error: (e) => {
+          this.sincronizando.set(false);
+          this.toast.erro(mensagemDeErro(e));
+        },
+      });
   }
 }

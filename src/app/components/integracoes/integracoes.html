@@ -75,12 +75,32 @@
           <button type="button" class="btn btn-secondary" [disabled]="!i.configurada || testando()" (click)="testar()">
             {{ testando() ? 'Testando...' : 'Testar conexão' }}
           </button>
-          <button type="submit" class="btn btn-primary" [disabled]="salvando()">
+          <button type="button" class="btn btn-secondary" [disabled]="!podeSincronizar(i) || sincronizando()" (click)="sincronizar()">
+            @if (sincronizando()) {
+              <span class="spinner" aria-hidden="true"></span> Sincronizando...
+            } @else {
+              Sincronizar agora
+            }
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="salvando() || sincronizando()">
             {{ salvando() ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
       </form>
     </div>
+
+    @if (resumo(); as r) {
+      <div class="card">
+        <h2 class="card-title">Última sincronização</h2>
+        <p>
+          <span [class]="r.sucesso ? 'badge badge-green' : 'badge badge-red'">{{ r.sucesso ? 'Sucesso' : 'Falha' }}</span>
+          {{ r.issuesProcessadas }} issue(s) e {{ r.worklogsProcessados }} worklog(s) processados em {{ dataHora(r.fim) }}.
+        </p>
+        @if (r.mensagemErro) {
+          <p class="muted small">{{ r.mensagemErro }}</p>
+        }
+      </div>
+    }
 
     <div class="card">
       <div class="card-header">
