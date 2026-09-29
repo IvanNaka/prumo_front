@@ -5,7 +5,6 @@ import { portfolioGuard } from './core/guards/portfolio.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { PERMISSOES } from './core/models/permissoes';
 import { Usuarios } from './components/admin/usuarios/usuarios';
-import { Dashboard } from './components/dashboard/dashboard';
 import { Dependencias } from './components/portfolio/dependencias/dependencias';
 import { Integracoes } from './components/integracoes/integracoes';
 import { Login } from './components/login/login';
@@ -38,7 +37,11 @@ export const routes: Routes = [
           { path: 'visao-geral', component: VisaoGeral, data: { titulo: 'Visão geral do portfólio' } },
           { path: 'criterios', component: Criterios, data: { titulo: 'Critérios de priorização' } },
           { path: 'priorizacao', component: Priorizacao, data: { titulo: 'Priorização' } },
-          { path: 'dashboard', component: Dashboard, data: { titulo: 'Dashboard' } },
+          {
+            path: 'dashboard',
+            loadComponent: () => import('./components/dashboard/dashboard').then((m) => m.Dashboard),
+            data: { titulo: 'Dashboard' },
+          },
           { path: 'projetos', component: Projetos, data: { titulo: 'Projetos' } },
           { path: 'dependencias', component: Dependencias, data: { titulo: 'Dependências' } },
           {

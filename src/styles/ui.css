@@ -423,3 +423,17 @@
     transform: rotate(360deg);
   }
 }
+
+/* Gráficos do dashboard */
+.chart-box {
+  position: relative;
+  height: 220px;
+}
+
+.chart-box.tall { height: 280px; }
+
+.indicator-card {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
