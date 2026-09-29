@@ -10,6 +10,7 @@ import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
 import { Portfolios } from './components/portfolios/portfolios';
+import { VisaoGeral } from './components/portfolio/visao-geral/visao-geral';
 import { CriarProjeto } from './components/projetos/criar-projeto/criar-projeto';
 import { DetalhesProjeto } from './components/projetos/detalhes-projeto/detalhes-projeto';
 import { Projetos } from './components/projetos/projetos';
@@ -27,6 +28,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: Dashboard, data: { titulo: 'Dashboard' } },
       { path: 'portfolios', component: Portfolios, data: { titulo: 'Portfólios' } },
+      { path: 'portfolios/:id/visao-geral', component: VisaoGeral, data: { titulo: 'Portfólio' } },
       {
         path: 'projetos/novo',
         component: CriarProjeto,

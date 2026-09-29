@@ -14,6 +14,12 @@ export interface Usuario {
   dataCriacao: string;
 }
 
+export interface UsuarioOpcao {
+  id: string;
+  nome: string;
+  email: string;
+}
+
 export interface SalvarUsuario {
   nome: string;
   email?: string;
@@ -25,6 +31,11 @@ export interface SalvarUsuario {
 export class UsuariosService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/usuarios`;
+
+  /** Usuários ativos (id, nome, e-mail) — para os campos "responsável" e "membros". */
+  ativos(): Observable<UsuarioOpcao[]> {
+    return this.http.get<UsuarioOpcao[]>(`${this.baseUrl}/ativos`);
+  }
 
   listar(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.baseUrl);
