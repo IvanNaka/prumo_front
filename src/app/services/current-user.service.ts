@@ -4,15 +4,9 @@ import { catchError, map, Observable, of, shareReplay } from 'rxjs';
 import { AuthService } from './auth.service';
 import { UsersService } from './usersService';
 
-export type Role =
-	| 'PO'
-	| 'Gerente'
-	| 'Diretoria'
-	| 'TechLead'
-	| 'ScrumMaster'
-	| 'QA'
-	| 'DEV'
-	| 'Admin';
+import { Role } from '../core/models/enums';
+
+export type { Role };
 
 @Injectable({
 	providedIn: 'root',
