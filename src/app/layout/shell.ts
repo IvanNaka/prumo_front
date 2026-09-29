@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
 import { Header } from '../components/header/header';
@@ -11,9 +11,9 @@ import { Sidebar } from '../components/sidebar/sidebar';
   imports: [RouterOutlet, Sidebar, Header],
   template: `
     <div class="app-shell">
-      <app-sidebar [activeItem]="activeView()" (onNavigate)="handleNavigate($event)"></app-sidebar>
+      <app-sidebar></app-sidebar>
       <div class="app-content">
-        <app-header [title]="titles[activeView()] ?? ''"></app-header>
+        <app-header [title]="titulo()"></app-header>
         <main class="app-main">
           <router-outlet></router-outlet>
         </main>
@@ -24,37 +24,25 @@ import { Sidebar } from '../components/sidebar/sidebar';
 })
 export class Shell {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  readonly activeView = signal('portfolios');
-
-  readonly titles: Record<string, string> = {
-    dashboard: 'Dashboard',
-    portfolios: 'Portfólios',
-    projetos: 'Projetos',
-    dependencias: 'Dependências',
-    times: 'Times',
-    okrs: 'OKRs',
-    integracoes: 'Integrações',
-    relatorios: 'Relatórios',
-    'nao-autorizado': 'Acesso não autorizado',
-  };
+  /** Título vindo de `data: { titulo }` da rota ativa mais interna. */
+  readonly titulo = signal('');
 
   constructor() {
-    this.sync(this.router.url);
+    this.atualizarTitulo();
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event) => this.sync((event as NavigationEnd).urlAfterRedirects));
+      .subscribe(() => this.atualizarTitulo());
   }
 
-  handleNavigate(view: string): void {
-    this.activeView.set(view);
-    void this.router.navigate([`/${view}`]);
-  }
-
-  private sync(url: string): void {
-    const segment = url.replace(/^\//, '').split(/[/?#]/)[0];
-    if (this.titles[segment]) {
-      this.activeView.set(segment);
+  private atualizarTitulo(): void {
+    let atual = this.route.snapshot;
+    let titulo = '';
+    while (atual) {
+      titulo = (atual.data?.['titulo'] as string | undefined) ?? titulo;
+      atual = atual.firstChild!;
     }
+    this.titulo.set(titulo);
   }
 }

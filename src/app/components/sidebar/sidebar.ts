@@ -1,39 +1,41 @@
-import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+
+import { Role } from '../../core/models/enums';
+import { PERMISSOES, TODOS } from '../../core/models/permissoes';
+import { AuthService } from '../../core/services/auth.service';
 
 interface MenuItem {
-  id: string;
+  rota: string;
   icon: string;
   label: string;
+  /** Perfis que podem VER o recurso (Seção 3.6). */
+  perfis: readonly Role[];
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
-  standalone: true
 })
 export class Sidebar {
-  activeItem = input<string>('dashboard');
-  onNavigate = output<string>();
+  private readonly authService = inject(AuthService);
 
-  private readonly allMenuItems: MenuItem[] = [
-    { id: 'dashboard', icon: 'home', label: 'Dashboard' },
-    { id: 'portfolios', icon: 'portfolio', label: 'Portfólios' },
-    { id: 'projetos', icon: 'folder-open', label: 'Projetos' },
-    { id: 'dependencias', icon: 'link', label: 'Dependências' },
-    { id: 'times', icon: 'team', label: 'Times' },
-    { id: 'integracoes', icon: 'integration', label: 'Integrações' },
-    // { id: 'okrs', icon: 'target', label: 'OKRs' },
-    // { id: 'relatorios', icon: 'bar-chart-3', label: 'Relatórios' },
-    // { id: 'configuracoes', icon: 'settings', label: 'Configurações' },
+  private readonly itens: MenuItem[] = [
+    { rota: '/portfolios', icon: 'portfolio', label: 'Portfólios', perfis: TODOS },
+    { rota: '/dashboard', icon: 'home', label: 'Dashboard', perfis: TODOS },
+    { rota: '/projetos', icon: 'folder-open', label: 'Projetos', perfis: TODOS },
+    { rota: '/dependencias', icon: 'link', label: 'Dependências', perfis: TODOS },
+    { rota: '/okrs', icon: 'target', label: 'OKRs', perfis: TODOS },
+    { rota: '/times', icon: 'team', label: 'Equipes', perfis: TODOS },
+    { rota: '/relatorios', icon: 'bar-chart-3', label: 'Relatórios', perfis: PERMISSOES.verRelatorios },
+    { rota: '/integracoes', icon: 'integration', label: 'Integrações', perfis: PERMISSOES.integracoes },
   ];
 
-  readonly menuItems = () => this.allMenuItems;
-
-  handleNavigate(id: string) {
-    this.onNavigate.emit(id);
-  }
-
+  /** Cada item aparece somente para os perfis que podem ver aquele recurso. */
+  readonly menuItems = computed(() => {
+    this.authService.perfis();
+    return this.itens.filter((item) => this.authService.temPerfil(item.perfis));
+  });
 }

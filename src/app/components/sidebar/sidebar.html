@@ -1,18 +1,13 @@
 <aside class="app-sidebar">
   <div class="sidebar-brand">
     <div class="brand-icon">
-      <img src="/assets/icons/prumo_logo_sb.svg" alt="Home"  height="80">
+      <img src="/assets/icons/prumo_logo_sb.svg" alt="Prumo" height="80" />
     </div>
   </div>
 
   <nav class="nav">
-    @for (item of menuItems(); track item.id) {
-      @let isActive = activeItem() === item.id;
-      <button
-        (click)="handleNavigate(item.id)"
-        [class.active]="isActive"
-        class="menu-item"
-      >
+    @for (item of menuItems(); track item.rota) {
+      <a class="menu-item" [routerLink]="item.rota" routerLinkActive="active">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           @switch (item.icon) {
             @case ('home') {
@@ -45,7 +40,7 @@
           }
         </svg>
         <span>{{ item.label }}</span>
-      </button>
+      </a>
     }
   </nav>
 </aside>
