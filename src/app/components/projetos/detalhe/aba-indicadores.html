@@ -1,0 +1,76 @@
+@if (indicadores(); as i) {
+  <div class="grid-2">
+    <article class="card indicator-card">
+      <h2 class="card-title">Saúde do projeto</h2>
+      @if (i.saude.disponivel) {
+        <div>
+          <span class="kpi-value big">{{ i.saude.pontuacaoSaude }}</span>
+          <span [class]="badgeSaude(i.saude.classificacao)">{{ i.saude.classificacao }}</span>
+        </div>
+        @if (i.saude.flags.length) {
+          <ul class="small">
+            @for (flag of i.saude.flags; track flag) {
+              <li>{{ flag }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="small muted">Nenhum sinal de risco.</p>
+        }
+      } @else {
+        <p class="empty-state">A saúde é calculada só para projetos Planejados, Em andamento ou Em risco.</p>
+      }
+    </article>
+
+    <article class="card indicator-card">
+      <h2 class="card-title">Progresso das tarefas (Jira)</h2>
+      @if (i.saude.totalIssues > 0) {
+        <div>
+          <span class="kpi-value big">{{ num(i.saude.progresso) }}%</span>
+          <span class="muted"> concluído</span>
+        </div>
+        <div class="progress green"><span [style.width.%]="largura(i.saude.progresso)"></span></div>
+        <p class="small">
+          {{ i.saude.concluidas }} de {{ i.saude.totalIssues }} tarefa(s) concluída(s) ·
+          <span [class.text-danger]="i.saude.atrasadas > 0">{{ i.saude.atrasadas }} atrasada(s)</span>
+        </p>
+      } @else {
+        <p class="empty-state">{{ rn18 }}</p>
+      }
+    </article>
+
+    <article class="card indicator-card">
+      <h2 class="card-title">Lead time</h2>
+      @if (i.leadTime.disponivel) {
+        <div>
+          <span class="kpi-value big">{{ num(i.leadTime.leadTimeMediano) }}</span>
+          <span class="muted"> dias (mediana)</span>
+        </div>
+        <p class="small">Média {{ num(i.leadTime.leadTimeMedio) }} dias · P85 {{ num(i.leadTime.p85) }} dias · {{ i.leadTime.quantidade }} concluída(s)</p>
+      } @else {
+        <p class="empty-state">{{ i.leadTime.motivo || rn18 }}</p>
+      }
+    </article>
+
+    <article class="card indicator-card">
+      <h2 class="card-title">Qualidade da entrega</h2>
+      @if (i.qualidade.disponivel) {
+        <div>
+          <span class="kpi-value big">{{ num(i.qualidade.indiceQualidade) }}%</span>
+          <span class="muted"> índice de qualidade</span>
+        </div>
+        <p class="small">
+          {{ i.qualidade.bugs }} bug(s) para {{ i.qualidade.entregas }} entrega(s) · razão {{ num(i.qualidade.razaoBugsPorEntrega) }}
+          (meta ≤ {{ num(i.qualidade.metaRazao) }})
+        </p>
+        <span [class]="i.qualidade.atingiuMeta ? 'badge badge-green' : 'badge badge-red'">
+          {{ i.qualidade.atingiuMeta ? 'Meta atingida' : 'Meta não atingida' }}
+        </span>
+      } @else {
+        <p class="empty-state">{{ i.qualidade.motivo || rn18 }}</p>
+      }
+    </article>
+  </div>
+  <p class="small muted">Lead time e qualidade consideram as tarefas concluídas entre {{ data(i.de) }} e {{ data(i.ate) }}.</p>
+} @else {
+  <div class="card empty-state">Carregando indicadores...</div>
+}

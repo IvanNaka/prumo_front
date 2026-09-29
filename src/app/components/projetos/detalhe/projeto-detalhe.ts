@@ -32,14 +32,25 @@ import { ProjetoForm } from '../projeto-form';
 import { AbaOrcamento } from './aba-orcamento';
 import { AbaBusinessCase } from './aba-business-case';
 import { AbaDependencias } from './aba-dependencias';
+import { AbaIndicadores } from './aba-indicadores';
 import { AuthService } from '../../../core/services/auth.service';
 
-export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'dependencias' | 'orcamento' | 'business-case';
+export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'dependencias' | 'orcamento' | 'business-case' | 'indicadores';
 
 /** Detalhe do projeto (/projetos/{id}) — roteiro do Cap. 4, Parte 2. */
 @Component({
   selector: 'app-projeto-detalhe',
-  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes, AbaOrcamento, AbaBusinessCase, AbaDependencias],
+  imports: [
+    RouterLink,
+    TemPerfilDirective,
+    ConfirmDialog,
+    ProjetoForm,
+    OkrAssociacoes,
+    AbaOrcamento,
+    AbaBusinessCase,
+    AbaDependencias,
+    AbaIndicadores,
+  ],
   templateUrl: './projeto-detalhe.html',
 })
 export class ProjetoDetalhePage {

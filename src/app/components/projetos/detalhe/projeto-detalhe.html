@@ -46,6 +46,7 @@
         <button type="button" class="tab" [class.active]="aba() === 'orcamento'" (click)="aba.set('orcamento')">Orçamento</button>
         <button type="button" class="tab" [class.active]="aba() === 'business-case'" (click)="aba.set('business-case')">Business case</button>
       }
+      <button type="button" class="tab" [class.active]="aba() === 'indicadores'" (click)="aba.set('indicadores')">Indicadores</button>
     </nav>
 
     @switch (aba()) {
@@ -121,6 +122,9 @@
           [editavel]="!portfolioEncerrado()"
           (alterado)="carregar()"
         ></app-aba-dependencias>
+      }
+      @case ('indicadores') {
+        <app-aba-indicadores [projetoId]="p.id"></app-aba-indicadores>
       }
       @case ('okrs') {
         <app-okr-associacoes

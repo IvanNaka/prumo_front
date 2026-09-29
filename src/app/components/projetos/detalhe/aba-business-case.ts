@@ -8,12 +8,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FinanceiroService, Retorno } from '../../../core/services/financeiro.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { brl, data, num } from '../../../shared/cores';
-import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
 
 /** Aba "Business case" (RF25, RF41, F6): investimento, taxa, fluxos previstos, retornos e VPL. */
 @Component({
   selector: 'app-aba-business-case',
-  imports: [ReactiveFormsModule, TemPerfilDirective],
+  imports: [ReactiveFormsModule],
   templateUrl: './aba-business-case.html',
 })
 export class AbaBusinessCase implements OnInit {
