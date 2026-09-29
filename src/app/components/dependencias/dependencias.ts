@@ -3,7 +3,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Portfolio, PortfoliosService } from '../../services/portfoliosService';
 import { Project, ProjectService } from '../../services/projectService';
 import {

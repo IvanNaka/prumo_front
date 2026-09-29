@@ -1,119 +1,87 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
+import { mensagemDeErro } from '../../core/models/problem';
+import { AuthService } from '../../core/services/auth.service';
 
-interface GoogleCredentialResponse {
-  credential: string;
-}
+declare const google: any;
 
-interface GoogleAccountsId {
-  initialize: (options: { client_id: string; callback: (response: GoogleCredentialResponse) => void }) => void;
-  renderButton: (
-    parent: HTMLElement,
-    options: {
-      theme?: 'outline' | 'filled_blue' | 'filled_black';
-      size?: 'large' | 'medium' | 'small';
-      text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
-      shape?: 'rectangular' | 'pill' | 'circle' | 'square';
-      width?: string;
-      logo_alignment?: 'left' | 'center';
-    }
-  ) => void;
-}
-
-interface GoogleWindow extends Window {
-  google?: {
-    accounts: {
-      id: GoogleAccountsId;
-    };
-  };
-}
-
+/**
+ * UC1 — Autenticar usuário: somente login com Google (D01). O ID token recebido do Google é
+ * enviado para POST /api/auth/google, que devolve o JWT do Prumo.
+ */
 @Component({
   selector: 'app-login',
-  imports: [CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login implements AfterViewInit, OnDestroy {
-  private readonly googleScriptId = 'google-identity-services';
-  private readonly googleWindow = window as GoogleWindow;
-  private googleCredentialCallback?: (response: GoogleCredentialResponse) => void;
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly zone = inject(NgZone);
+  private intervalo?: number;
 
   readonly googleClientConfigured = Boolean(environment.googleClientId);
-
-  onLogin = output<string>();
+  readonly erro = signal<string | null>(null);
+  readonly entrando = signal(false);
 
   @ViewChild('googleButton', { static: true })
-  private googleButtonRef!: ElementRef<HTMLDivElement>;
+  private btnRef!: ElementRef<HTMLDivElement>;
 
   ngAfterViewInit(): void {
-    this.loadGoogleScript();
+    if (!this.googleClientConfigured) {
+      return;
+    }
+    if (this.googleDisponivel()) {
+      this.renderizarBotao();
+      return;
+    }
+    // O script do Google (index.html) é carregado de forma assíncrona.
+    this.intervalo = window.setInterval(() => {
+      if (this.googleDisponivel()) {
+        window.clearInterval(this.intervalo);
+        this.renderizarBotao();
+      }
+    }, 100);
+    window.setTimeout(() => window.clearInterval(this.intervalo), 10000);
   }
 
   ngOnDestroy(): void {
-    this.googleCredentialCallback = undefined;
+    window.clearInterval(this.intervalo);
   }
 
-  handleGoogleLogin(response: GoogleCredentialResponse): void {
-    this.onLogin.emit(response.credential);
-  }
-
-  private loadGoogleScript(): void {
-    if (!environment.googleClientId) {
-      return;
-    }
-
-    if (this.googleWindow.google?.accounts.id) {
-      this.initializeGoogleButton();
-      return;
-    }
-
-    if (document.getElementById(this.googleScriptId)) {
-      this.waitForGoogleReady();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = this.googleScriptId;
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => this.initializeGoogleButton();
-    document.head.append(script);
-  }
-
-  private waitForGoogleReady(): void {
-    const timeoutId = window.setInterval(() => {
-      if (this.googleWindow.google?.accounts.id) {
-        window.clearInterval(timeoutId);
-        this.initializeGoogleButton();
-      }
-    }, 50);
-
-    window.setTimeout(() => window.clearInterval(timeoutId), 5000);
-  }
-
-  private initializeGoogleButton(): void {
-    if (!environment.googleClientId) {
-      return;
-    }
-
-    this.googleCredentialCallback = (response) => this.handleGoogleLogin(response);
-
-    this.googleWindow.google?.accounts.id.initialize({
-      client_id: environment.googleClientId,
-      callback: this.googleCredentialCallback,
+  onGoogle(idToken: string): void {
+    this.erro.set(null);
+    this.entrando.set(true);
+    this.authService.loginGoogle(idToken).subscribe({
+      next: () => {
+        this.entrando.set(false);
+        void this.router.navigate(['/portfolios']);
+      },
+      error: (error) => {
+        this.entrando.set(false);
+        // RN01, RN02 ou RN03: a mensagem vem no campo "detail".
+        this.erro.set(mensagemDeErro(error, 'Não foi possível realizar o login. Tente novamente.'));
+      },
     });
+  }
 
-    this.googleWindow.google?.accounts.id.renderButton(this.googleButtonRef.nativeElement, {
+  private googleDisponivel(): boolean {
+    return typeof google !== 'undefined' && !!google?.accounts?.id;
+  }
+
+  private renderizarBotao(): void {
+    google.accounts.id.initialize({
+      client_id: environment.googleClientId,
+      callback: (r: any) => this.zone.run(() => this.onGoogle(r.credential)),
+    });
+    google.accounts.id.renderButton(this.btnRef.nativeElement, {
       theme: 'outline',
       size: 'large',
       text: 'signin_with',
+      locale: 'pt-BR',
       shape: 'pill',
-      width: '100%',
-      logo_alignment: 'left',
     });
   }
 }

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Portfolio, PortfoliosService } from '../../services/portfoliosService';
 import { TeamAccessService } from '../../services/team-access.service';
 import { User, UsersService } from '../../services/usersService';

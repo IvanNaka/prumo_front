@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 
-import { AuthService } from './auth.service';
+import { AuthService } from '../core/services/auth.service';
 import { TeamsService } from './teamsService';
 
 /**

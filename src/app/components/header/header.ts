@@ -2,9 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthService } from '../../services/auth.service';
-import { CurrentUserService } from '../../services/current-user.service';
-import { TeamAccessService } from '../../services/team-access.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -15,8 +13,6 @@ import { TeamAccessService } from '../../services/team-access.service';
 })
 export class Header {
   private readonly authService = inject(AuthService);
-  private readonly currentUserService = inject(CurrentUserService);
-  private readonly teamAccessService = inject(TeamAccessService);
   private readonly router = inject(Router);
 
   title = input<string>('');
@@ -31,9 +27,7 @@ export class Header {
   }
 
   logout(): void {
-    this.authService.clearToken();
-    this.currentUserService.clearCache();
-    this.teamAccessService.clearCache();
+    this.authService.logout();
     this.closeUserMenu();
     void this.router.navigate(['/login']);
   }

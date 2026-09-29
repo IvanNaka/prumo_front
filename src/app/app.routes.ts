@@ -1,34 +1,40 @@
 import { Routes } from '@angular/router';
-import { Login } from './components/login/login';
+
+import { authGuard } from './core/guards/auth.guard';
 import { Dashboard } from './components/dashboard/dashboard';
+import { Dependencias } from './components/dependencias/dependencias';
+import { Integracoes } from './components/integracoes/integracoes';
+import { Login } from './components/login/login';
+import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
+import { Okrs } from './components/okrs/okrs';
 import { Portfolios } from './components/portfolios/portfolios';
-import { Projetos } from './components/projetos/projetos';
 import { CriarProjeto } from './components/projetos/criar-projeto/criar-projeto';
 import { DetalhesProjeto } from './components/projetos/detalhes-projeto/detalhes-projeto';
-import { Dependencias } from './components/dependencias/dependencias';
-import { Roadmap } from './components/roadmap/roadmap';
-import { Okrs } from './components/okrs/okrs';
-import { Configuracoes } from './components/configuracoes/configuracoes';
-import { Integracoes } from './components/integracoes/integracoes';
+import { Projetos } from './components/projetos/projetos';
 import { Relatorios } from './components/relatorios/relatorios';
 import { Times } from './components/times/times';
-import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
-import { teamRequiredGuard } from './guards/team-required.guard';
+import { Shell } from './layout/shell';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
-  { path: 'dashboard', component: Dashboard, canActivate: [teamRequiredGuard] },
-  { path: 'portfolios', component: Portfolios, canActivate: [teamRequiredGuard] },
-  { path: 'projetos/novo', component: CriarProjeto, canActivate: [teamRequiredGuard] },
-  { path: 'projetos/:id', component: DetalhesProjeto, canActivate: [teamRequiredGuard] },
-  { path: 'projetos', component: Projetos, canActivate: [teamRequiredGuard] },
-  { path: 'dependencias', component: Dependencias, canActivate: [teamRequiredGuard] },
-  { path: 'roadmap', component: Roadmap, canActivate: [teamRequiredGuard] },
-  { path: 'times', component: Times },
-  { path: 'okrs', component: Okrs, canActivate: [teamRequiredGuard] },
-  { path: 'configuracoes', component: Configuracoes, canActivate: [teamRequiredGuard] },
-  { path: 'integracoes', component: Integracoes, canActivate: [teamRequiredGuard] },
-  { path: 'relatorios', component: Relatorios, canActivate: [teamRequiredGuard] },
-  { path: 'nao-autorizado', component: NaoAutorizado },
-  { path: '', redirectTo: '/login', pathMatch: 'full' }
+  {
+    path: '',
+    component: Shell,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: Dashboard },
+      { path: 'portfolios', component: Portfolios },
+      { path: 'projetos/novo', component: CriarProjeto },
+      { path: 'projetos/:id', component: DetalhesProjeto },
+      { path: 'projetos', component: Projetos },
+      { path: 'dependencias', component: Dependencias },
+      { path: 'times', component: Times },
+      { path: 'okrs', component: Okrs },
+      { path: 'integracoes', component: Integracoes },
+      { path: 'relatorios', component: Relatorios },
+      { path: 'nao-autorizado', component: NaoAutorizado },
+      { path: '', redirectTo: 'portfolios', pathMatch: 'full' },
+    ],
+  },
+  { path: '**', redirectTo: '' },
 ];
