@@ -1,4 +1,153 @@
-<section class="panel">
-  <h2 class="panel-title">OKRs (Objectives & Key Results)</h2>
-  <p class="panel-muted">Seus objetivos e resultados-chave serão exibidos aqui</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>OKRs</h1>
+      <p class="page-subtitle">Objetivos estratégicos e seus Key Results. O progresso do OKR é a média do progresso dos KRs.</p>
+    </div>
+    <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarOkrs" (click)="abrirNovo()">Novo OKR</button>
+  </header>
+
+  @if (carregando()) {
+    <div class="card empty-state">Carregando OKRs...</div>
+  } @else {
+    <div class="okr-list">
+      @for (okr of okrs(); track okr.id) {
+        <article class="card okr">
+          <div class="okr-head" role="button" tabindex="0" (click)="alternar(okr)" (keydown.enter)="alternar(okr)">
+            <div class="okr-title">
+              <span class="chevron">{{ expandidos().has(okr.id) ? '▾' : '▸' }}</span>
+              <div>
+                <h2 class="card-title">{{ okr.titulo }}</h2>
+                <p class="muted small">
+                  {{ okr.keyResults.length }} KR(s) · {{ okr.quantidadeProjetos }} projeto(s) associado(s)
+                  @if (okr.dataInicio || okr.dataFim) { · {{ data(okr.dataInicio) }} a {{ data(okr.dataFim) }} }
+                </p>
+              </div>
+            </div>
+            <div class="okr-progress">
+              <div [class]="'progress ' + cor(okr.progresso)"><span [style.width.%]="okr.progresso"></span></div>
+              <strong>{{ num(okr.progresso) }}%</strong>
+            </div>
+          </div>
+
+          @if (expandidos().has(okr.id)) {
+            @if (okr.descricao) {
+              <p class="page-subtitle">{{ okr.descricao }}</p>
+            }
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Key Result</th><th>Meta</th><th>Valor atual</th><th style="min-width: 180px">Progresso</th><th class="actions"></th></tr>
+                </thead>
+                <tbody>
+                  @for (kr of okr.keyResults; track kr.id) {
+                    <tr>
+                      <td class="strong">{{ kr.descricao }}</td>
+                      <td>{{ num(kr.meta) }}</td>
+                      <td>
+                        @if (krEmEdicao() === kr.id) {
+                          <input class="input" type="number" min="0" step="0.01" style="max-width: 120px"
+                                 [value]="novoValor()" (input)="novoValor.set(+$any($event.target).value)" />
+                        } @else {
+                          {{ num(kr.valorAtual) }}
+                        }
+                      </td>
+                      <td>
+                        <div class="row" style="flex-wrap: nowrap">
+                          <div [class]="'progress ' + cor(kr.progresso)" style="flex: 1"><span [style.width.%]="kr.progresso"></span></div>
+                          <span>{{ num(kr.progresso) }}%</span>
+                        </div>
+                      </td>
+                      <td class="actions">
+                        <ng-container *temPerfil="permissoes.editarOkrs">
+                          @if (krEmEdicao() === kr.id) {
+                            <button type="button" class="btn btn-primary btn-sm" (click)="salvarValor(kr)">Salvar</button>
+                            <button type="button" class="btn btn-link btn-sm" (click)="krEmEdicao.set(null)">Cancelar</button>
+                          } @else {
+                            <button type="button" class="btn btn-secondary btn-sm" (click)="editarValor(kr)">Atualizar valor</button>
+                          }
+                        </ng-container>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary btn-sm" *temPerfil="permissoes.editarOkrs" (click)="abrirEdicao(okr)">Editar OKR</button>
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="card empty-state">Nenhum OKR cadastrado.</div>
+      }
+    </div>
+  }
+
+  @if (formAberto()) {
+    <div class="modal-overlay" (click)="formAberto.set(false)">
+      <div class="modal modal-lg" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">{{ editando() ? 'Editar OKR' : 'Novo OKR' }}</h2>
+          <button type="button" class="btn btn-link" (click)="formAberto.set(false)">Fechar</button>
+        </div>
+
+        <form class="form-grid" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+          <div class="field">
+            <label for="titulo">Objetivo (título) *</label>
+            <input id="titulo" formControlName="titulo" maxlength="200" />
+            @if (form.controls.titulo.invalid && form.controls.titulo.touched) {
+              <p class="field-error">Informe o título do objetivo.</p>
+            }
+          </div>
+          <div class="field">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" formControlName="descricao" maxlength="1000"></textarea>
+          </div>
+          <div class="form-grid cols-2">
+            <div class="field">
+              <label for="inicio">Início</label>
+              <input id="inicio" type="date" formControlName="dataInicio" />
+            </div>
+            <div class="field">
+              <label for="fim">Fim</label>
+              <input id="fim" type="date" formControlName="dataFim" />
+            </div>
+          </div>
+
+          <div class="card-header" style="margin: 0.5rem 0 0">
+            <h3 class="card-title" style="font-size: 1rem">Key Results *</h3>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="adicionarKr()">Adicionar KR</button>
+          </div>
+          <div formArrayName="keyResults" class="form-grid">
+            @for (kr of krs.controls; track kr; let i = $index) {
+              <div class="kr-row" [formGroupName]="i">
+                <div class="field">
+                  <label [for]="'kr-desc-' + i">Descrição</label>
+                  <input [id]="'kr-desc-' + i" formControlName="descricao" maxlength="300" />
+                </div>
+                <div class="field">
+                  <label [for]="'kr-meta-' + i">Meta</label>
+                  <input [id]="'kr-meta-' + i" type="number" min="0.01" step="0.01" formControlName="meta" />
+                </div>
+                <div class="field">
+                  <label [for]="'kr-atual-' + i">Valor atual</label>
+                  <input [id]="'kr-atual-' + i" type="number" min="0" step="0.01" formControlName="valorAtual" />
+                </div>
+                <button type="button" class="btn btn-link text-danger" [disabled]="krs.length === 1" (click)="removerKr(i)">Remover</button>
+              </div>
+            }
+          </div>
+          @if (krs.length === 0) {
+            <p class="field-error">Um objetivo precisa de pelo menos um Key Result.</p>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="formAberto.set(false)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || krs.length === 0 || salvando()">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 </section>

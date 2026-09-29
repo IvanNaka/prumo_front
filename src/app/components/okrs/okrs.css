@@ -1,3 +1,57 @@
-.panel { background:#fff; border:1px solid #E5E7EB; border-radius:.5rem; padding:1.5rem; box-shadow: 0 1px 2px rgba(16,24,40,0.04); }
-.panel-title { font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:1rem }
-.panel-muted { color:#6B7280 }
+.okr-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.okr {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.okr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.okr-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.okr-title p {
+  margin: 0.2rem 0 0;
+}
+
+.chevron {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.6rem;
+}
+
+.okr-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 220px;
+}
+
+.okr-progress .progress {
+  flex: 1;
+}
+
+.kr-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+@media (max-width: 720px) {
+  .kr-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
