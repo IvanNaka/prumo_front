@@ -36,6 +36,8 @@
 .notification-body { display: grid; gap: 0.25rem; min-width: 0; }
 
 .notification-message {
+  display: block;
+  justify-content: flex-start;
   margin: 0;
   padding: 0;
   text-align: left;

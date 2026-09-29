@@ -86,12 +86,14 @@ export class Dashboard {
   });
 
   readonly opcoesRosca: ChartConfiguration<'doughnut'>['options'] = {
+    locale: 'pt-BR',
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' } },
   };
 
   readonly opcoesBarras: ChartConfiguration<'bar'>['options'] = {
+    locale: 'pt-BR',
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' } },
