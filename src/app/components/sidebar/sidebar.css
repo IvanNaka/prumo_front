@@ -34,6 +34,25 @@
 	text-decoration: none;
 }
 .menu-item svg { width: 1.25rem; height: 1.25rem; color: currentColor }
+.menu-item.menu-sub { padding-left: 1.25rem; font-size: .92rem }
+.nav-section {
+	margin: .25rem 0 .75rem;
+	padding: .5rem 0;
+	border-top: 1px dashed #E5E7EB;
+	border-bottom: 1px dashed #E5E7EB;
+}
+.nav-section-title {
+	display: block;
+	padding: .25rem .75rem .4rem;
+	color: #64748B;
+	font-size: .72rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 .menu-item:hover { background: #F8FAFC }
 .menu-item.active { background: #dbeafe; color: #1d4ed8 }
 .profile { padding: 1rem; border-top: 1px solid #E5E7EB }

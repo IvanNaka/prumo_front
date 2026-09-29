@@ -1,8 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
+import { Criterio } from '../../../core/models/criterio';
 import { PERMISSOES } from '../../../core/models/permissoes';
 import {
   AcaoPortfolio,
@@ -12,41 +11,59 @@ import {
   ROTULO_ACAO_PORTFOLIO,
 } from '../../../core/models/portfolio';
 import { mensagemDeErro } from '../../../core/models/problem';
-import { ROTULO_PORTFOLIO_STATUS, ROTULO_ROLE } from '../../../core/models/rotulos';
+import { ProjetoResumo } from '../../../core/models/projeto';
+import {
+  ROTULO_PORTFOLIO_STATUS,
+  ROTULO_PROJETO_STATUS,
+  ROTULO_ROLE,
+  ROTULO_TIPO_CRITERIO,
+} from '../../../core/models/rotulos';
 import { AuthService } from '../../../core/services/auth.service';
+import { CriteriosService } from '../../../core/services/criterios.service';
+import { PortfolioContextService } from '../../../core/services/portfolio-context.service';
 import { PortfoliosService } from '../../../core/services/portfolios.service';
+import { ProjetosService } from '../../../core/services/projetos.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { UsuarioOpcao, UsuariosService } from '../../../core/services/usuarios.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
-import { badgePortfolio, data } from '../../../shared/cores';
+import { badgePortfolio, badgeProjeto, data, num } from '../../../shared/cores';
 import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
 import { PortfolioForm } from '../../portfolios/portfolio-form';
 
 type Aba = 'resumo' | 'membros';
 
-/** Página do portfólio: dados, ações do ciclo de vida (Figura 27) e membros. */
+/**
+ * Visão geral do portfólio ativo (UC3, passo 5): dados, lista de projetos e de critérios,
+ * ações do ciclo de vida (Figura 27) e membros.
+ */
 @Component({
   selector: 'app-portfolio-visao-geral',
-  imports: [TemPerfilDirective, ConfirmDialog, PortfolioForm],
+  imports: [TemPerfilDirective, ConfirmDialog, PortfolioForm, RouterLink],
   templateUrl: './visao-geral.html',
 })
 export class VisaoGeral {
-  private readonly route = inject(ActivatedRoute);
+  private readonly contexto = inject(PortfolioContextService);
   private readonly service = inject(PortfoliosService);
+  private readonly criteriosService = inject(CriteriosService);
+  private readonly projetosService = inject(ProjetosService);
   private readonly usuariosService = inject(UsuariosService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
 
   readonly permissoes = PERMISSOES;
   readonly rotuloStatus = ROTULO_PORTFOLIO_STATUS;
+  readonly rotuloProjeto = ROTULO_PROJETO_STATUS;
+  readonly rotuloTipo = ROTULO_TIPO_CRITERIO;
   readonly rotuloRole = ROTULO_ROLE;
   readonly rotuloAcao = ROTULO_ACAO_PORTFOLIO;
   readonly badge = badgePortfolio;
+  readonly badgeProjeto = badgeProjeto;
   readonly data = data;
+  readonly num = num;
 
-  readonly id = toSignal(this.route.paramMap.pipe(map((p) => p.get('id')!)), { requireSync: true });
-
-  readonly portfolio = signal<Portfolio | null>(null);
+  readonly portfolio = this.contexto.ativo;
+  readonly projetos = signal<ProjetoResumo[]>([]);
+  readonly criterios = signal<Criterio[]>([]);
   readonly membros = signal<MembroPortfolio[]>([]);
   readonly usuarios = signal<UsuarioOpcao[]>([]);
   readonly aba = signal<Aba>('resumo');
@@ -54,7 +71,7 @@ export class VisaoGeral {
   readonly acaoPendente = signal<AcaoPortfolio | null>(null);
   readonly novoMembroId = signal('');
 
-  readonly encerrado = computed(() => this.portfolio()?.status === 'Encerrado');
+  readonly encerrado = this.contexto.encerrado;
   readonly acoes = computed(() => {
     const p = this.portfolio();
     return p ? ACOES_POR_STATUS_PORTFOLIO[p.status] : [];
@@ -71,13 +88,27 @@ export class VisaoGeral {
     return this.usuarios().filter((u) => !atuais.has(u.id));
   });
 
+  private carregadoPara: string | null = null;
+
   constructor() {
-    this.carregar();
+    // Recarrega as listas quando o portfólio ativo muda (ex.: "Trocar").
+    effect(() => {
+      const p = this.portfolio();
+      if (p && p.id !== this.carregadoPara) {
+        this.carregadoPara = p.id;
+        this.aba.set('resumo');
+        this.carregarListas(p.id);
+      }
+    });
   }
 
-  carregar(): void {
-    this.service.obter(this.id()).subscribe({
-      next: (p) => this.portfolio.set(p),
+  private carregarListas(id: string): void {
+    this.projetosService.listar(id).subscribe({
+      next: (lista) => this.projetos.set(lista),
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
+    });
+    this.criteriosService.listar(id).subscribe({
+      next: (lista) => this.criterios.set(lista),
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
   }
@@ -90,7 +121,8 @@ export class VisaoGeral {
   }
 
   carregarMembros(): void {
-    this.service.membros(this.id()).subscribe({
+    const id = this.portfolio()!.id;
+    this.service.membros(id).subscribe({
       next: (lista) => this.membros.set(lista),
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
@@ -104,21 +136,23 @@ export class VisaoGeral {
     if (!usuarioId) {
       return;
     }
-    this.service.adicionarMembro(this.id(), usuarioId).subscribe({
+    this.service.adicionarMembro(this.portfolio()!.id, usuarioId).subscribe({
       next: (lista) => {
         this.membros.set(lista);
         this.novoMembroId.set('');
         this.toast.sucesso('Membro adicionado.');
+        this.contexto.recarregar();
       },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
   }
 
   removerMembro(membro: MembroPortfolio): void {
-    this.service.removerMembro(this.id(), membro.usuarioId).subscribe({
+    this.service.removerMembro(this.portfolio()!.id, membro.usuarioId).subscribe({
       next: () => {
         this.membros.update((lista) => lista.filter((m) => m.usuarioId !== membro.usuarioId));
         this.toast.sucesso('Membro removido.');
+        this.contexto.recarregar();
       },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
@@ -134,9 +168,9 @@ export class VisaoGeral {
 
   executarAcao(acao: AcaoPortfolio): void {
     this.acaoPendente.set(null);
-    this.service.executarAcao(this.id(), acao).subscribe({
+    this.service.executarAcao(this.portfolio()!.id, acao).subscribe({
       next: (p) => {
-        this.portfolio.set(p);
+        this.contexto.definir(p);
         this.toast.sucesso(`Status do portfólio: ${this.rotuloStatus[p.status]}.`);
       },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
@@ -145,6 +179,6 @@ export class VisaoGeral {
 
   salvo(portfolio: Portfolio): void {
     this.editando.set(false);
-    this.portfolio.set(portfolio);
+    this.contexto.definir(portfolio);
   }
 }

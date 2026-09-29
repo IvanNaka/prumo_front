@@ -1,24 +1,46 @@
 <header class="app-header">
-  <h1 class="app-title">{{ title() }}</h1>
-
-  <div class="user-menu">
-    <button
-      class="user-button"
-      type="button"
-      aria-label="User menu"
-      [attr.aria-expanded]="showUserMenu()"
-      aria-haspopup="menu"
-      (click)="toggleUserMenu()"
-    >
-      <img src="\assets\icons\user_icon.svg" alt="Ícone do usuário" class="user-icon" width="20" height="20">
-    </button>
-
-    @if (showUserMenu()) {
-      <div class="user-menu-panel" role="menu">
-        <button type="button" class="user-menu-item" role="menuitem" (click)="logout()">
-          Sair
-        </button>
+  <div class="header-left">
+    <h1 class="app-title">{{ title() }}</h1>
+    @if (portfolioAtivo(); as p) {
+      <div class="portfolio-ativo" title="Portfólio ativo">
+        <span class="portfolio-ativo-label">Portfólio:</span>
+        <a class="portfolio-ativo-nome" [routerLink]="['/portfolios', p.id, 'visao-geral']">{{ p.nome }}</a>
+        <a class="portfolio-trocar" routerLink="/portfolios">Trocar</a>
       </div>
     }
+  </div>
+
+  <div class="header-right">
+    <ng-content></ng-content>
+
+    <div class="user-menu">
+      <button
+        class="user-button"
+        type="button"
+        aria-label="Menu do usuário"
+        [attr.aria-expanded]="showUserMenu()"
+        aria-haspopup="menu"
+        (click)="toggleUserMenu()"
+      >
+        <img src="/assets/icons/user_icon.svg" alt="" class="user-icon" width="20" height="20" />
+      </button>
+
+      @if (showUserMenu()) {
+        <div class="user-menu-panel" role="menu">
+          @if (usuario(); as u) {
+            <div class="user-info">
+              <strong>{{ u.nome }}</strong>
+              <span>{{ u.email }}</span>
+              <span class="user-perfis">
+                @for (perfil of u.perfis; track perfil) {
+                  <span class="badge badge-gray">{{ rotuloRole[perfil] }}</span>
+                }
+              </span>
+            </div>
+          }
+          <button type="button" class="user-menu-item" role="menuitem" (click)="logout()">Sair</button>
+        </div>
+      }
+    </div>
   </div>
 </header>

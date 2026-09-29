@@ -3,6 +3,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/ro
 import { filter } from 'rxjs';
 
 import { Header } from '../components/header/header';
+import { PortfolioContextService } from '../core/services/portfolio-context.service';
 import { Sidebar } from '../components/sidebar/sidebar';
 
 /** Layout das páginas autenticadas: menu lateral, cabeçalho e conteúdo. */
@@ -30,6 +31,13 @@ export class Shell {
   readonly titulo = signal('');
 
   constructor() {
+    // Depois de um F5, restaura o portfólio ativo guardado na sessão (UC3).
+    const contexto = inject(PortfolioContextService);
+    const idSalvo = contexto.idSalvo();
+    if (idSalvo && !contexto.ativo()) {
+      contexto.selecionar(idSalvo).subscribe({ error: () => contexto.limpar() });
+    }
+
     this.atualizarTitulo();
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))

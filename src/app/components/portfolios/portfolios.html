@@ -16,9 +16,12 @@
   } @else {
     <div class="portfolio-grid">
       @for (portfolio of portfolios(); track portfolio.id) {
-        <button type="button" class="card portfolio-card" (click)="abrir(portfolio)">
+        <button type="button" class="card portfolio-card" [class.ativo]="ativoId() === portfolio.id" (click)="abrir(portfolio)">
           <div class="row">
             <span [class]="badge(portfolio.status)">{{ rotuloStatus[portfolio.status] }}</span>
+            @if (ativoId() === portfolio.id) {
+              <span class="badge badge-blue">Ativo</span>
+            }
           </div>
           <h2 class="portfolio-name">{{ portfolio.nome }}</h2>
           @if (portfolio.objetivo) {

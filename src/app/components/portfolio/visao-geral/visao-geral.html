@@ -67,6 +67,58 @@
             <span class="kpi-value">{{ p.quantidadeMembros }}</span>
           </div>
         </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Projetos</h2>
+              <a class="btn btn-link" [routerLink]="['/portfolios', p.id, 'projetos']">Ver todos</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Projeto</th><th>Responsável</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @for (projeto of projetos(); track projeto.id) {
+                    <tr class="clickable" [routerLink]="['/projetos', projeto.id]">
+                      <td class="strong">{{ projeto.nome }}</td>
+                      <td>{{ projeto.responsavelNome }}</td>
+                      <td><span [class]="badgeProjeto(projeto.status)">{{ rotuloProjeto[projeto.status] }}</span></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="3" class="empty-state">Nenhum projeto cadastrado.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Critérios de priorização</h2>
+              <a class="btn btn-link" [routerLink]="['/portfolios', p.id, 'criterios']">Gerenciar</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Critério</th><th>Peso</th><th>Tipo</th></tr>
+                </thead>
+                <tbody>
+                  @for (criterio of criterios(); track criterio.id) {
+                    <tr>
+                      <td class="strong">{{ criterio.nome }}</td>
+                      <td>{{ num(criterio.peso) }}</td>
+                      <td>{{ criterio.tipo ? rotuloTipo[criterio.tipo] : '—' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="3" class="empty-state">Nenhum critério cadastrado.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       }
       @case ('membros') {
         <div class="card">
