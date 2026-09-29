@@ -11,6 +11,7 @@ import { Integracoes } from './components/integracoes/integracoes';
 import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
+import { Criterios } from './components/portfolio/criterios/criterios';
 import { VisaoGeral } from './components/portfolio/visao-geral/visao-geral';
 import { Portfolios } from './components/portfolios/portfolios';
 import { CriarProjeto } from './components/projetos/criar-projeto/criar-projeto';
@@ -34,6 +35,7 @@ export const routes: Routes = [
         canActivate: [portfolioGuard],
         children: [
           { path: 'visao-geral', component: VisaoGeral, data: { titulo: 'Visão geral do portfólio' } },
+          { path: 'criterios', component: Criterios, data: { titulo: 'Critérios de priorização' } },
           { path: 'dashboard', component: Dashboard, data: { titulo: 'Dashboard' } },
           { path: 'projetos', component: Projetos, data: { titulo: 'Projetos' } },
           { path: 'dependencias', component: Dependencias, data: { titulo: 'Dependências' } },
