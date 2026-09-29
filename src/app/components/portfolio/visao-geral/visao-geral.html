@@ -68,6 +68,15 @@
           </div>
         </div>
 
+        <app-okr-associacoes
+          titulo="OKRs do portfólio"
+          vazio="Nenhum OKR associado ao portfólio."
+          [associados]="okrs()"
+          [editavel]="!encerrado()"
+          (associar)="associarOkr($event)"
+          (desassociar)="desassociarOkr($event)"
+        ></app-okr-associacoes>
+
         <div class="grid-2">
           <div class="card">
             <div class="card-header">

@@ -59,4 +59,25 @@ export class OkrsService {
   atualizarValor(keyResultId: string, valorAtual: number): Observable<KeyResult> {
     return this.http.put<KeyResult>(`${this.api}/key-results/${keyResultId}`, { valorAtual });
   }
+
+  // Associações (RF16, UC9)
+  associarProjeto(projetoId: string, okrId: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/projetos/${projetoId}/okrs/${okrId}`, null);
+  }
+
+  desassociarProjeto(projetoId: string, okrId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/projetos/${projetoId}/okrs/${okrId}`);
+  }
+
+  doPortfolio(portfolioId: string): Observable<Okr[]> {
+    return this.http.get<Okr[]>(`${this.api}/portfolios/${portfolioId}/okrs`);
+  }
+
+  associarPortfolio(portfolioId: string, okrId: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/portfolios/${portfolioId}/okrs/${okrId}`, null);
+  }
+
+  desassociarPortfolio(portfolioId: string, okrId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/portfolios/${portfolioId}/okrs/${okrId}`);
+  }
 }

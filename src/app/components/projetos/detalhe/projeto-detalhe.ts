@@ -26,14 +26,16 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { badgeAvaliacao, badgePrioridade, badgeProjeto, brl, data, dataHora, num } from '../../../shared/cores';
 import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
+import { OkrAssociacoes } from '../../../shared/okr-associacoes';
+import { OkrsService } from '../../../core/services/okrs.service';
 import { ProjetoForm } from '../projeto-form';
 
-export type AbaProjeto = 'resumo' | 'avaliacao';
+export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs';
 
 /** Detalhe do projeto (/projetos/{id}) — roteiro do Cap. 4, Parte 2. */
 @Component({
   selector: 'app-projeto-detalhe',
-  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm],
+  imports: [RouterLink, TemPerfilDirective, ConfirmDialog, ProjetoForm, OkrAssociacoes],
   templateUrl: './projeto-detalhe.html',
 })
 export class ProjetoDetalhePage {
@@ -41,6 +43,7 @@ export class ProjetoDetalhePage {
   private readonly service = inject(ProjetosService);
   private readonly contexto = inject(PortfolioContextService);
   private readonly toast = inject(ToastService);
+  private readonly okrsService = inject(OkrsService);
 
   readonly permissoes = PERMISSOES;
   readonly rotuloStatus = ROTULO_PROJETO_STATUS;
@@ -108,6 +111,26 @@ export class ProjetoDetalhePage {
         this.toast.sucesso(`Status do projeto: ${this.rotuloStatus[p.status]}.`);
       },
       error: (e) => this.toast.erro(mensagemDeErro(e)), // RN22
+    });
+  }
+
+  associarOkr(okrId: string): void {
+    this.okrsService.associarProjeto(this.id(), okrId).subscribe({
+      next: () => {
+        this.toast.sucesso('OKR associado ao projeto.');
+        this.carregar();
+      },
+      error: (e) => this.toast.erro(mensagemDeErro(e)), // RN14
+    });
+  }
+
+  desassociarOkr(okrId: string): void {
+    this.okrsService.desassociarProjeto(this.id(), okrId).subscribe({
+      next: () => {
+        this.toast.sucesso('OKR removido do projeto.');
+        this.carregar();
+      },
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
   }
 

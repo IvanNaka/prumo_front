@@ -29,6 +29,8 @@ import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { badgePortfolio, badgeProjeto, data, num } from '../../../shared/cores';
 import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
 import { PortfolioForm } from '../../portfolios/portfolio-form';
+import { OkrAssociacoes } from '../../../shared/okr-associacoes';
+import { Okr, OkrsService } from '../../../core/services/okrs.service';
 
 type Aba = 'resumo' | 'membros';
 
@@ -38,7 +40,7 @@ type Aba = 'resumo' | 'membros';
  */
 @Component({
   selector: 'app-portfolio-visao-geral',
-  imports: [TemPerfilDirective, ConfirmDialog, PortfolioForm, RouterLink],
+  imports: [TemPerfilDirective, ConfirmDialog, PortfolioForm, RouterLink, OkrAssociacoes],
   templateUrl: './visao-geral.html',
 })
 export class VisaoGeral {
@@ -49,6 +51,7 @@ export class VisaoGeral {
   private readonly usuariosService = inject(UsuariosService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly okrsService = inject(OkrsService);
 
   readonly permissoes = PERMISSOES;
   readonly rotuloStatus = ROTULO_PORTFOLIO_STATUS;
@@ -64,6 +67,7 @@ export class VisaoGeral {
   readonly portfolio = this.contexto.ativo;
   readonly projetos = signal<ProjetoResumo[]>([]);
   readonly criterios = signal<Criterio[]>([]);
+  readonly okrs = signal<Okr[]>([]);
   readonly membros = signal<MembroPortfolio[]>([]);
   readonly usuarios = signal<UsuarioOpcao[]>([]);
   readonly aba = signal<Aba>('resumo');
@@ -109,6 +113,36 @@ export class VisaoGeral {
     });
     this.criteriosService.listar(id).subscribe({
       next: (lista) => this.criterios.set(lista),
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
+    });
+    this.carregarOkrs(id);
+  }
+
+  private carregarOkrs(id: string): void {
+    this.okrsService.doPortfolio(id).subscribe({
+      next: (lista) => this.okrs.set(lista),
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
+    });
+  }
+
+  associarOkr(okrId: string): void {
+    const id = this.portfolio()!.id;
+    this.okrsService.associarPortfolio(id, okrId).subscribe({
+      next: () => {
+        this.toast.sucesso('OKR associado ao portfólio.');
+        this.carregarOkrs(id);
+      },
+      error: (e) => this.toast.erro(mensagemDeErro(e)), // RN14
+    });
+  }
+
+  desassociarOkr(okrId: string): void {
+    const id = this.portfolio()!.id;
+    this.okrsService.desassociarPortfolio(id, okrId).subscribe({
+      next: () => {
+        this.toast.sucesso('OKR removido do portfólio.');
+        this.carregarOkrs(id);
+      },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });
   }

@@ -40,6 +40,7 @@
     <nav class="tabs">
       <button type="button" class="tab" [class.active]="aba() === 'resumo'" (click)="aba.set('resumo')">Resumo</button>
       <button type="button" class="tab" [class.active]="aba() === 'avaliacao'" (click)="aba.set('avaliacao')">Avaliação</button>
+      <button type="button" class="tab" [class.active]="aba() === 'okrs'" (click)="aba.set('okrs')">OKRs</button>
     </nav>
 
     @switch (aba()) {
@@ -100,6 +101,16 @@
             </table>
           </div>
         </div>
+      }
+      @case ('okrs') {
+        <app-okr-associacoes
+          titulo="OKRs do projeto"
+          vazio="Projeto sem OKR: aparece como desalinhado no indicador de alinhamento."
+          [associados]="p.okrs"
+          [editavel]="!portfolioEncerrado()"
+          (associar)="associarOkr($event)"
+          (desassociar)="desassociarOkr($event)"
+        ></app-okr-associacoes>
       }
     }
 

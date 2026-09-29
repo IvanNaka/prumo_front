@@ -39,6 +39,7 @@ export interface ProjetoDetalhe extends ProjetoResumo {
   dataUltimaPriorizacao?: string | null;
   acoesPermitidas: AcaoProjeto[];
   avaliacoes: NotaCriterio[];
+  okrs: { id: string; titulo: string; progresso: number }[];
 }
 
 export interface SalvarProjeto {
