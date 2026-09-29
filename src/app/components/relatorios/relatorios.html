@@ -1,4 +1,49 @@
-<section class="panel">
-  <h2 class="panel-title">Relatórios</h2>
-  <p class="panel-muted">Seus relatórios serão exibidos aqui</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>Relatórios</h1>
+      <p class="page-subtitle">Gere os relatórios do portfólio ativo em PDF ou Excel. Cada geração fica registrada no histórico.</p>
+    </div>
+  </header>
+
+  <div class="grid-2">
+    @for (c of cartoes; track c.tipo) {
+      <article class="card indicator-card">
+        <h2 class="card-title">{{ c.titulo }}</h2>
+        <p class="small muted">{{ c.descricao }}</p>
+        <div class="row">
+          <button type="button" class="btn btn-primary" [disabled]="gerando() !== null" (click)="gerar(c.tipo, 'pdf')">
+            @if (gerando() === c.tipo + '-pdf') { <span class="spinner" aria-hidden="true"></span> } PDF
+          </button>
+          <button type="button" class="btn btn-secondary" [disabled]="gerando() !== null" (click)="gerar(c.tipo, 'excel')">
+            @if (gerando() === c.tipo + '-excel') { <span class="spinner" aria-hidden="true"></span> } Excel
+          </button>
+        </div>
+      </article>
+    }
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">Histórico</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Data</th><th>Relatório</th><th>Formato</th><th>Gerado por</th><th>Arquivo</th></tr>
+        </thead>
+        <tbody>
+          @for (r of historico(); track r.id) {
+            <tr>
+              <td>{{ dataHora(r.dataGeracao) }}</td>
+              <td>{{ r.tipo === 'Portfolio' ? 'Portfólio' : 'Executivo' }}</td>
+              <td><span [class]="r.formato === 'PDF' ? 'badge badge-red' : 'badge badge-green'">{{ r.formato }}</span></td>
+              <td>{{ r.geradoPorNome }}</td>
+              <td class="muted small">{{ r.nome }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-state">Nenhum relatório gerado.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
 </section>
