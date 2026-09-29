@@ -31,6 +31,7 @@ export class Sidebar {
     { rota: '/portfolios', icon: 'portfolio', label: 'Portfólios', perfis: TODOS },
     { rota: '/okrs', icon: 'target', label: 'OKRs', perfis: TODOS },
     { rota: '/equipes', icon: 'team', label: 'Equipes', perfis: TODOS },
+    { rota: '/notificacoes', icon: 'bell', label: 'Notificações', perfis: TODOS },
     { rota: '/integracoes/jira', icon: 'integration', label: 'Integração Jira', perfis: PERMISSOES.integracoes },
     { rota: '/admin/usuarios', icon: 'settings', label: 'Usuários', perfis: PERMISSOES.gerirUsuarios },
   ];
