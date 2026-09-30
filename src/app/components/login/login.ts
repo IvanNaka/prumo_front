@@ -57,7 +57,7 @@ export class Login implements AfterViewInit, OnDestroy {
     this.authService.loginGoogle(idToken).subscribe({
       next: () => {
         this.entrando.set(false);
-        void this.router.navigate(['/portfolios']);
+        void this.router.navigate([this.authService.semEquipe() ? '/boas-vindas' : '/portfolios']);
       },
       error: (error) => {
         this.entrando.set(false);

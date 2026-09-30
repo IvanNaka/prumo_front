@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/guards/auth.guard';
+import { comEquipeGuard, semEquipeGuard } from './core/guards/equipe.guard';
 import { portfolioGuard } from './core/guards/portfolio.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { PERMISSOES } from './core/models/permissoes';
 import { Usuarios } from './components/admin/usuarios/usuarios';
 import { Dependencias } from './components/portfolio/dependencias/dependencias';
+import { BoasVindas } from './components/boas-vindas/boas-vindas';
 import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
@@ -22,10 +24,11 @@ import { Shell } from './layout/shell';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
+  { path: 'boas-vindas', component: BoasVindas, canActivate: [semEquipeGuard] },
   {
     path: '',
     component: Shell,
-    canActivate: [authGuard],
+    canActivate: [authGuard, comEquipeGuard],
     children: [
       { path: 'portfolios', component: Portfolios, data: { titulo: 'Portfólios' } },
       {

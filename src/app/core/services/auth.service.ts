@@ -23,11 +23,27 @@ export class AuthService {
 
   readonly usuario = this.usuarioAtual.asReadonly();
   readonly perfis = computed<Role[]>(() => this.usuarioAtual()?.perfis ?? []);
+  /** Logado mas ainda sem perfil: só acessa a tela de entrar em uma equipe ou criar uma. */
+  readonly semEquipe = computed(() => this.usuarioAtual() !== null && this.perfis().length === 0);
 
   /** POST /api/auth/google — troca o ID token do Google pelo JWT do Prumo. */
   loginGoogle(idToken: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.baseUrl}/google`, { idToken })
+      .pipe(tap((response) => this.salvarSessao(response)));
+  }
+
+  /** POST /api/onboarding/equipes — cria a equipe; o usuário vira TechLead (novo JWT). */
+  criarEquipe(nome: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/onboarding/equipes`, { nome })
+      .pipe(tap((response) => this.salvarSessao(response)));
+  }
+
+  /** POST /api/onboarding/entrar — entra na equipe pelo código de convite como Desenvolvedor (novo JWT). */
+  entrarNaEquipe(codigo: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/onboarding/entrar`, { codigo })
       .pipe(tap((response) => this.salvarSessao(response)));
   }
 
