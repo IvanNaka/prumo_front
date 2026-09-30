@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 
 /**
  * Primeiro acesso: o usuário ainda não tem perfil e só pode entrar em uma equipe (código de
- * convite -> Desenvolvedor) ou criar uma (-> Administrador).
+ * convite -> Desenvolvedor) ou criar uma (-> TechLead).
  */
 @Component({
   selector: 'app-boas-vindas',

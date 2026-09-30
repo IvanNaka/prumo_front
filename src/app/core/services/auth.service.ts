@@ -33,7 +33,7 @@ export class AuthService {
       .pipe(tap((response) => this.salvarSessao(response)));
   }
 
-  /** POST /api/onboarding/equipes — cria a equipe; o usuário vira Administrador (novo JWT). */
+  /** POST /api/onboarding/equipes — cria a equipe; o usuário vira TechLead (novo JWT). */
   criarEquipe(nome: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/onboarding/equipes`, { nome })
