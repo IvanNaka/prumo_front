@@ -21,6 +21,13 @@
               {{ equipe.membros.length }} membro(s) · capacidade {{ equipe.capacidadeMensalTotal }} h/mês
               @if (equipe.portfolioNome) { · portfólio {{ equipe.portfolioNome }} }
             </p>
+            @if (equipe.codigoConvite) {
+              <p class="card-subtitle row">
+                Código de convite: <strong class="invite-code">{{ equipe.codigoConvite }}</strong>
+                <button type="button" class="btn btn-link btn-sm" (click)="copiarCodigo(equipe)">Copiar</button>
+                <button type="button" class="btn btn-link btn-sm" (click)="gerarNovoCodigo(equipe)">Gerar novo</button>
+              </p>
+            }
           </div>
           <div class="row">
             <a class="btn btn-secondary btn-sm" [routerLink]="['/equipes', equipe.id, 'capacidade']">Capacidade</a>

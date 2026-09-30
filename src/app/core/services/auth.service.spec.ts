@@ -34,6 +34,21 @@ describe('AuthService', () => {
     expect(service.isAuthenticated()).toBe(false);
   });
 
+  it('entrar na equipe troca a sessão pelo novo JWT com perfil', () => {
+    const expiraEm = new Date(Date.now() + 3600_000).toISOString();
+    service.loginGoogle('x').subscribe();
+    http.expectOne(() => true).flush({ token: 't1', expiraEm, usuario: { id: '1', nome: 'A', email: 'a', perfis: [] } });
+    expect(service.semEquipe()).toBe(true);
+
+    service.entrarNaEquipe('K7M2QX9A').subscribe();
+    const req = http.expectOne((r) => r.url.endsWith('/onboarding/entrar'));
+    expect(req.request.body).toEqual({ codigo: 'K7M2QX9A' });
+    req.flush({ token: 't2', expiraEm, usuario: { id: '1', nome: 'A', email: 'a', perfis: ['Desenvolvedor'] } });
+
+    expect(sessionStorage.getItem('prumo_token')).toBe('t2');
+    expect(service.semEquipe()).toBe(false);
+  });
+
   it('Administrador tem acesso a qualquer perfil', () => {
     const expiraEm = new Date(Date.now() + 3600_000).toISOString();
     service.loginGoogle('x').subscribe();

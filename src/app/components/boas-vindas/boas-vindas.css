@@ -1,0 +1,90 @@
+:host {
+  display: block;
+}
+
+.welcome-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.welcome-card {
+  width: 100%;
+  max-width: 34rem;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  padding: 2rem;
+}
+
+.welcome-brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-brand img {
+  height: 3.5rem;
+  width: auto;
+}
+
+.welcome-brand h1 {
+  margin: 1rem 0 0;
+  font-size: 1.35rem;
+  color: #0f172a;
+}
+
+.welcome-subtitle {
+  margin: 0.5rem 0 0;
+  color: #6b7280;
+}
+
+.welcome-options {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.welcome-option {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.welcome-option h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.welcome-option .field-help {
+  margin: -0.5rem 0 0;
+}
+
+.code-input {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.welcome-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.welcome-divider::before,
+.welcome-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #e2e8f0;
+}
+
+.welcome-footer {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+}

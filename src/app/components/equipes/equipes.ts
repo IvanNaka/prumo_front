@@ -18,6 +18,7 @@ import { TemPerfilDirective } from '../../shared/tem-perfil.directive';
   selector: 'app-equipes',
   imports: [ReactiveFormsModule, RouterLink, TemPerfilDirective, ConfirmDialog],
   templateUrl: './equipes.html',
+  styles: ['.invite-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; }'],
 })
 export class Equipes {
   private readonly service = inject(EquipesService);
@@ -109,6 +110,25 @@ export class Equipes {
       next: () => {
         this.toast.sucesso('Equipe excluída.');
         this.carregar();
+      },
+      error: (e) => this.toast.erro(mensagemDeErro(e)),
+    });
+  }
+
+  /** Quem entra com o código vira Desenvolvedor e membro da equipe. */
+  copiarCodigo(equipe: Equipe): void {
+    if (!equipe.codigoConvite) return;
+    navigator.clipboard?.writeText(equipe.codigoConvite).then(
+      () => this.toast.sucesso('Código de convite copiado.'),
+      () => this.toast.erro('Não foi possível copiar o código.')
+    );
+  }
+
+  gerarNovoCodigo(equipe: Equipe): void {
+    this.service.gerarCodigoConvite(equipe.id).subscribe({
+      next: (atualizada) => {
+        this.equipes.update((lista) => lista.map((e) => (e.id === atualizada.id ? atualizada : e)));
+        this.toast.sucesso('Novo código gerado. O código anterior deixou de valer.');
       },
       error: (e) => this.toast.erro(mensagemDeErro(e)),
     });

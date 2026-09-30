@@ -21,6 +21,8 @@ export interface Equipe {
   portfolioId?: string | null;
   portfolioNome?: string | null;
   capacidadeMensalTotal: number;
+  /** Só vem preenchido para quem pode editar equipes. */
+  codigoConvite?: string | null;
   membros: MembroEquipe[];
 }
 
@@ -75,6 +77,11 @@ export class EquipesService {
 
   excluir(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  /** Gera um novo código de convite; o anterior deixa de valer. */
+  gerarCodigoConvite(id: string): Observable<Equipe> {
+    return this.http.post<Equipe>(`${this.baseUrl}/${id}/codigo-convite`, {});
   }
 
   adicionarMembro(equipeId: string, dados: SalvarMembro): Observable<MembroEquipe> {

@@ -1,0 +1,44 @@
+<div class="welcome-page">
+  <div class="welcome-card">
+    <div class="welcome-brand">
+      <img src="/assets/icons/prumo_logo_sb.svg" alt="Prumo" />
+      <h1>Boas-vindas{{ usuario()?.nome ? ', ' + usuario()?.nome : '' }}!</h1>
+      <p class="welcome-subtitle">Para acessar o Prumo, entre em uma equipe ou crie a sua.</p>
+    </div>
+
+    <div class="welcome-options">
+      <form class="welcome-option" [formGroup]="formEntrar" (ngSubmit)="entrar()" novalidate>
+        <h2>Entrar em uma equipe</h2>
+        <p class="field-help">Peça o código de convite ao responsável pela equipe.</p>
+        <div class="field">
+          <label for="codigo">Código de convite</label>
+          <input id="codigo" formControlName="codigo" maxlength="8" autocomplete="off" class="code-input" placeholder="Ex.: K7M2QX9A" />
+          @if (erroEntrar()) {
+            <p class="field-error" role="alert">{{ erroEntrar() }}</p>
+          }
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="formEntrar.invalid || enviando()">Entrar na equipe</button>
+      </form>
+
+      <div class="welcome-divider"><span>ou</span></div>
+
+      <form class="welcome-option" [formGroup]="formCriar" (ngSubmit)="criar()" novalidate>
+        <h2>Criar uma equipe</h2>
+        <p class="field-help">Você será o administrador e poderá convidar outras pessoas.</p>
+        <div class="field">
+          <label for="nomeEquipe">Nome da equipe</label>
+          <input id="nomeEquipe" formControlName="nome" maxlength="100" />
+          @if (erroCriar()) {
+            <p class="field-error" role="alert">{{ erroCriar() }}</p>
+          }
+        </div>
+        <button type="submit" class="btn btn-secondary" [disabled]="formCriar.invalid || enviando()">Criar equipe</button>
+      </form>
+    </div>
+
+    <p class="welcome-footer">
+      Conectado como {{ usuario()?.email }} ·
+      <button type="button" class="btn btn-link btn-sm" (click)="sair()">Sair</button>
+    </p>
+  </div>
+</div>
