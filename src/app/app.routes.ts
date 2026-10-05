@@ -11,7 +11,6 @@ import { BoasVindas } from './components/boas-vindas/boas-vindas';
 import { Login } from './components/login/login';
 import { NaoAutorizado } from './components/nao-autorizado/nao-autorizado';
 import { Okrs } from './components/okrs/okrs';
-import { Criterios } from './components/portfolio/criterios/criterios';
 import { Priorizacao } from './components/portfolio/priorizacao/priorizacao';
 import { VisaoGeral } from './components/portfolio/visao-geral/visao-geral';
 import { Portfolios } from './components/portfolios/portfolios';
@@ -37,7 +36,11 @@ export const routes: Routes = [
         canActivate: [portfolioGuard],
         children: [
           { path: 'visao-geral', component: VisaoGeral, data: { titulo: 'Visão geral do portfólio' } },
-          { path: 'criterios', component: Criterios, data: { titulo: 'Critérios de priorização' } },
+          {
+            path: 'criterios',
+            loadComponent: () => import('./components/portfolio/criterios/criterios').then((m) => m.Criterios),
+            data: { titulo: 'Critérios de priorização' },
+          },
           { path: 'priorizacao', component: Priorizacao, data: { titulo: 'Priorização' } },
           {
             path: 'dashboard',

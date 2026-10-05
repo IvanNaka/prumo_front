@@ -3,13 +3,16 @@
     <div>
       <h1>Critérios de priorização</h1>
       <p class="page-subtitle">
-        Cada projeto recebe uma nota de 1 a 5 em cada critério. O peso vai de 0,01 a 10.
+        Cada projeto recebe uma nota de 1 a 5 em cada critério. A soma dos pesos deve ser exatamente 10.
       </p>
     </div>
     @if (!encerrado()) {
-      <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarCriterios" (click)="novo()">
-        Novo critério
-      </button>
+      <div class="form-actions" *temPerfil="permissoes.editarCriterios">
+        @if (criterios().length > 0) {
+          <button type="button" class="btn btn-secondary" (click)="abrirAjustePesos()">Ajustar pesos</button>
+        }
+        <button type="button" class="btn btn-primary" (click)="novo()">Novo critério</button>
+      </div>
     }
   </header>
 
@@ -18,6 +21,13 @@
   }
 
   <div class="alert alert-info">Use o tipo Custo para critérios como Esforço e Risco.</div>
+
+  @if (!carregando() && criterios().length > 0 && !somaCompleta()) {
+    <div class="alert alert-warning">
+      A soma dos pesos é {{ num(somaPesos()) }} e deve ser exatamente {{ somaMaxima }}.
+      Faltam {{ num(somaMaxima - somaPesos()) }} — ajuste os pesos para poder priorizar.
+    </div>
+  }
 
   <div class="card">
     @if (carregando()) {
@@ -62,7 +72,9 @@
             <tfoot>
               <tr>
                 <td class="muted small" colspan="2">Soma dos pesos</td>
-                <td class="strong">{{ num(somaPesos()) }}</td>
+                <td class="strong" [class.text-success]="somaCompleta()" [class.text-danger]="!somaCompleta()">
+                  {{ num(somaPesos()) }} / {{ somaMaxima }}
+                </td>
                 <td colspan="2"></td>
               </tr>
             </tfoot>
@@ -96,10 +108,18 @@
 
           <div class="field">
             <label for="peso">Peso *</label>
-            <input id="peso" type="number" min="0.01" max="10" step="0.01" formControlName="peso" />
+            <input id="peso" type="number" min="0.01" [max]="pesoDisponivel()" step="0.01" formControlName="peso" />
             @if (form.controls.peso.invalid && form.controls.peso.touched) {
               <p class="field-error">Peso inválido. Informe um valor maior que 0 e até 10.</p>
+            } @else if (excedeSoma()) {
+              <p class="field-error">A soma dos pesos dos critérios não pode ultrapassar 10.</p>
             }
+            <p class="field-help">
+              Disponível: {{ num(pesoDisponivel()) }} de {{ somaMaxima }}.
+              @if (pesoDisponivel() <= 0) {
+                Use "Ajustar pesos" para liberar espaço antes de cadastrar um novo critério.
+              }
+            </p>
           </div>
 
           <div class="field">
@@ -117,9 +137,52 @@
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="formAberto.set(false)">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || salvando()">Salvar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || excedeSoma() || salvando()">Salvar</button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+  @if (ajustandoPesos()) {
+    <div class="modal-overlay" (click)="ajustandoPesos.set(false)">
+      <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">Ajustar pesos</h2>
+          <button type="button" class="btn btn-link" (click)="ajustandoPesos.set(false)">Fechar</button>
+        </div>
+
+        <div class="form-grid">
+          <p class="field-help">Distribua os pesos entre os critérios. A soma deve ser exatamente {{ somaMaxima }}.</p>
+
+          @for (criterio of criterios(); track criterio.id) {
+            <div class="field">
+              <label [for]="'peso-' + criterio.id">{{ criterio.nome }}</label>
+              <input
+                [id]="'peso-' + criterio.id"
+                type="number"
+                min="0.01"
+                max="10"
+                step="0.01"
+                [value]="pesosAjuste()[criterio.id]"
+                (input)="definirPesoAjuste(criterio.id, $any($event.target).value)"
+              />
+            </div>
+          }
+
+          <p class="strong" [class.text-success]="ajusteValido()" [class.text-danger]="!ajusteValido()">
+            Soma: {{ num(somaAjuste()) }} / {{ somaMaxima }}
+            @if (somaAjuste() !== somaMaxima) {
+              ({{ somaAjuste() < somaMaxima ? 'faltam' : 'sobram' }} {{ num(somaAjuste() < somaMaxima ? somaMaxima - somaAjuste() : somaAjuste() - somaMaxima) }})
+            }
+          </p>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-link" (click)="distribuirProporcionalmente()">Completar 10 proporcionalmente</button>
+            <button type="button" class="btn btn-secondary" (click)="ajustandoPesos.set(false)">Cancelar</button>
+            <button type="button" class="btn btn-primary" [disabled]="!ajusteValido() || salvando()" (click)="salvarPesos()">Salvar pesos</button>
+          </div>
+        </div>
       </div>
     </div>
   }
