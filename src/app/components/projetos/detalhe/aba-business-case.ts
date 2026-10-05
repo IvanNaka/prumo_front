@@ -1,13 +1,20 @@
 import { Component, inject, input, OnInit, signal } from '@angular/core';
-import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { RN18, Vpl } from '../../../core/models/indicadores';
+import { MES_FLUXO_MAXIMO, VALOR_MONETARIO_MAXIMO } from '../../../core/models/limites';
 import { PERMISSOES } from '../../../core/models/permissoes';
 import { mensagemDeErro } from '../../../core/models/problem';
 import { AuthService } from '../../../core/services/auth.service';
 import { FinanceiroService, Retorno } from '../../../core/services/financeiro.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { brl, data, num } from '../../../shared/cores';
+
+/** Data (yyyy-MM-dd) que não esteja no futuro — mesma regra dos lançamentos (RN28). */
+function naoFutura(control: AbstractControl): ValidationErrors | null {
+  const valor = control.value as string;
+  return valor && valor > new Date().toISOString().slice(0, 10) ? { dataFutura: true } : null;
+}
 
 /** Aba "Business case" (RF25, RF41, F6): investimento, taxa, fluxos previstos, retornos e VPL. */
 @Component({
@@ -30,6 +37,8 @@ export class AbaBusinessCase implements OnInit {
   readonly num = num;
   readonly data = data;
   readonly hoje = new Date().toISOString().slice(0, 10);
+  readonly valorMaximo = VALOR_MONETARIO_MAXIMO;
+  readonly mesMaximo = MES_FLUXO_MAXIMO;
 
   readonly vpl = signal<Vpl | null>(null);
   readonly retornos = signal<Retorno[]>([]);
@@ -37,14 +46,14 @@ export class AbaBusinessCase implements OnInit {
   readonly retornoAberto = signal(false);
 
   readonly form = this.fb.nonNullable.group({
-    investimentoInicial: [0, [Validators.required, Validators.min(0)]],
+    investimentoInicial: [0, [Validators.required, Validators.min(0), Validators.max(VALOR_MONETARIO_MAXIMO)]],
     taxaDescontoAnual: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
     fluxosPrevistos: this.fb.array<ReturnType<AbaBusinessCase['novoFluxo']>>([]),
   });
 
   readonly formRetorno = this.fb.nonNullable.group({
-    data: [this.hoje, [Validators.required]],
-    valor: [0, [Validators.required]],
+    data: [this.hoje, [Validators.required, naoFutura]],
+    valor: [0, [Validators.required, Validators.min(0.01), Validators.max(VALOR_MONETARIO_MAXIMO)]],
     descricao: ['', [Validators.maxLength(300)]],
   });
 
@@ -58,8 +67,9 @@ export class AbaBusinessCase implements OnInit {
 
   novoFluxo(mes = 1, valor = 0) {
     return this.fb.nonNullable.group({
-      mes: [mes, [Validators.required, Validators.min(1)]],
-      valor: [valor, [Validators.required]],
+      mes: [mes, [Validators.required, Validators.min(1), Validators.max(MES_FLUXO_MAXIMO)]],
+      // Fluxo previsto é entrada de caixa; o custo já entra no investimento inicial.
+      valor: [valor, [Validators.required, Validators.min(0), Validators.max(VALOR_MONETARIO_MAXIMO)]],
     });
   }
 

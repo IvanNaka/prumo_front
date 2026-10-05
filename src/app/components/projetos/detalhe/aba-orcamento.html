@@ -94,7 +94,7 @@
           <label for="valor">Valor (R$) *</label>
           <input id="valor" type="number" min="0.01" step="0.01" formControlName="valor" />
           @if (form.controls.valor.invalid && form.controls.valor.touched) {
-            <p class="field-error">O valor deve ser positivo.</p>
+            <p class="field-error">O valor deve ser positivo (até R$ 1 trilhão).</p>
           }
         </div>
         <div class="field">

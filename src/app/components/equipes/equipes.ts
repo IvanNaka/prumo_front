@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { CUSTO_HORA_MAXIMO } from '../../core/models/limites';
 import { PERMISSOES } from '../../core/models/permissoes';
 import { Portfolio } from '../../core/models/portfolio';
 import { mensagemDeErro } from '../../core/models/problem';
@@ -48,7 +49,7 @@ export class Equipes {
     usuarioId: [''],
     nome: ['', [Validators.required, Validators.maxLength(150)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(200)]],
-    custoHora: [0, [Validators.required, Validators.min(0)]],
+    custoHora: [0, [Validators.required, Validators.min(0), Validators.max(CUSTO_HORA_MAXIMO)]],
     capacidadeMensalHoras: [160, [Validators.required, Validators.min(1), Validators.max(300)]],
   });
 

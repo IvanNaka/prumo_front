@@ -111,7 +111,10 @@
             </div>
             <div class="field">
               <label for="fim">Fim</label>
-              <input id="fim" type="date" formControlName="dataFim" />
+              <input id="fim" type="date" [min]="form.controls.dataInicio.value" formControlName="dataFim" />
+              @if (form.hasError('fimAntesDoInicio')) {
+                <p class="field-error">A data de término deve ser igual ou posterior à data de início.</p>
+              }
             </div>
           </div>
 

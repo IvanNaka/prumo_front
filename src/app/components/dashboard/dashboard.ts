@@ -105,6 +105,12 @@ export class Dashboard {
 
   mudarPeriodo(campo: 'de' | 'ate', valor: string): void {
     if (!valor) return;
+    const de = campo === 'de' ? valor : this.de();
+    const ate = campo === 'ate' ? valor : this.ate();
+    if (de > ate) {
+      this.toast.erro('A data inicial do período deve ser anterior ou igual à data final.');
+      return;
+    }
     this[campo].set(valor);
     this.carregar();
   }
