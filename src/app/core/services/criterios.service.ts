@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Criterio, SalvarCriterio } from '../models/criterio';
+import { Criterio, PesoCriterio, SalvarCriterio } from '../models/criterio';
 
 /** Critérios de priorização (RF07–RF09, UC4–UC6). */
 @Injectable({ providedIn: 'root' })
@@ -21,6 +21,11 @@ export class CriteriosService {
 
   editar(id: string, dados: SalvarCriterio): Observable<Criterio> {
     return this.http.put<Criterio>(`${this.api}/criterios/${id}`, dados);
+  }
+
+  /** Redistribui os pesos de todos os critérios de uma vez (a soma deve ser 10). */
+  atualizarPesos(portfolioId: string, pesos: PesoCriterio[]): Observable<Criterio[]> {
+    return this.http.put<Criterio[]>(`${this.api}/portfolios/${portfolioId}/criterios/pesos`, pesos);
   }
 
   excluir(id: string): Observable<void> {
