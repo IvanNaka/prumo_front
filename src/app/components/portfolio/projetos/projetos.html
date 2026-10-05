@@ -2,7 +2,6 @@
   <header class="page-header">
     <div>
       <h1>Projetos</h1>
-      <p class="page-subtitle">Projetos do portfólio, ordenados pela posição no ranking.</p>
     </div>
     @if (!encerrado()) {
       <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarProjetos" (click)="formAberto.set(true)">
