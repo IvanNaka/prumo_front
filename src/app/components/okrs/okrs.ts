@@ -1,12 +1,20 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
+import { VALOR_KR_MAXIMO } from '../../core/models/limites';
 import { PERMISSOES } from '../../core/models/permissoes';
 import { mensagemDeErro } from '../../core/models/problem';
 import { KeyResult, Okr, OkrsService } from '../../core/services/okrs.service';
 import { ToastService } from '../../core/services/toast.service';
 import { data, num } from '../../shared/cores';
 import { TemPerfilDirective } from '../../shared/tem-perfil.directive';
+
+/** Validador "fim ≥ início" (RN12); as datas do OKR são opcionais. */
+function fimDepoisDoInicio(group: AbstractControl): ValidationErrors | null {
+  const inicio = group.get('dataInicio')?.value as string;
+  const fim = group.get('dataFim')?.value as string;
+  return inicio && fim && fim < inicio ? { fimAntesDoInicio: true } : null;
+}
 
 /** UC8 / RF14, RF15, RF17 — OKRs, Key Results e progresso (F4). */
 @Component({
@@ -39,7 +47,7 @@ export class Okrs {
     dataInicio: [''],
     dataFim: [''],
     keyResults: this.fb.array([this.novoKr()], { validators: [Validators.required, Validators.minLength(1)] }),
-  });
+  }, { validators: fimDepoisDoInicio });
 
   get krs(): FormArray {
     return this.form.controls.keyResults as FormArray;
@@ -79,8 +87,8 @@ export class Okrs {
     return this.fb.nonNullable.group({
       id: [kr?.id ?? ''],
       descricao: [kr?.descricao ?? '', [Validators.required, Validators.maxLength(300)]],
-      meta: [kr?.meta ?? 1, [Validators.required, Validators.min(0.01)]],
-      valorAtual: [kr?.valorAtual ?? 0, [Validators.required, Validators.min(0)]],
+      meta: [kr?.meta ?? 1, [Validators.required, Validators.min(0.01), Validators.max(VALOR_KR_MAXIMO)]],
+      valorAtual: [kr?.valorAtual ?? 0, [Validators.required, Validators.min(0), Validators.max(VALOR_KR_MAXIMO)]],
     });
   }
 
@@ -152,6 +160,11 @@ export class Okrs {
   }
 
   salvarValor(kr: KeyResult): void {
+    const valor = this.novoValor();
+    if (!Number.isFinite(valor) || valor < 0 || valor > VALOR_KR_MAXIMO) {
+      this.toast.erro('O valor atual deve ser maior ou igual a 0.');
+      return;
+    }
     this.service.atualizarValor(kr.id, this.novoValor()).subscribe({
       next: () => {
         this.krEmEdicao.set(null);

@@ -9,11 +9,11 @@
     <div class="row">
       <div class="field">
         <label for="de">De</label>
-        <input id="de" type="date" [value]="de()" (change)="mudarPeriodo('de', $any($event.target).value)" />
+        <input id="de" type="date" [max]="ate()" [value]="de()" (change)="mudarPeriodo('de', $any($event.target).value)" />
       </div>
       <div class="field">
         <label for="ate">Até</label>
-        <input id="ate" type="date" [value]="ate()" (change)="mudarPeriodo('ate', $any($event.target).value)" />
+        <input id="ate" type="date" [min]="de()" [value]="ate()" (change)="mudarPeriodo('ate', $any($event.target).value)" />
       </div>
     </div>
   </header>

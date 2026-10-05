@@ -2,6 +2,7 @@ import { Component, inject, input, OnInit, output, signal } from '@angular/core'
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 import { CATEGORIAS, CategoriaEstrategica, Prioridade, PRIORIDADES } from '../../core/models/enums';
+import { VALOR_MONETARIO_MAXIMO } from '../../core/models/limites';
 import { mensagemDeErro } from '../../core/models/problem';
 import { ProjetoDetalhe, SalvarProjeto } from '../../core/models/projeto';
 import { DESCRICAO_CATEGORIA, ROTULO_PRIORIDADE } from '../../core/models/rotulos';
@@ -48,7 +49,7 @@ export class ProjetoForm implements OnInit {
       responsavelId: ['', [Validators.required]],
       dataInicio: ['', [Validators.required]],
       dataFim: ['', [Validators.required]],
-      orcamentoAprovado: [0, [Validators.required, Validators.min(0)]],
+      orcamentoAprovado: [0, [Validators.required, Validators.min(0), Validators.max(VALOR_MONETARIO_MAXIMO)]],
       categoriaEstrategica: ['' as CategoriaEstrategica | '', [Validators.required]],
       prioridade: ['Media' as Prioridade, [Validators.required]],
       jiraProjectKey: ['', [Validators.maxLength(50)]],

@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { TIPOS_LANCAMENTO, TipoLancamento } from '../../../core/models/enums';
 import { BurnRate, RN18 } from '../../../core/models/indicadores';
+import { VALOR_MONETARIO_MAXIMO } from '../../../core/models/limites';
 import { PERMISSOES } from '../../../core/models/permissoes';
 import { mensagemDeErro } from '../../../core/models/problem';
 import { ROTULO_TIPO_LANCAMENTO } from '../../../core/models/rotulos';
@@ -41,7 +42,7 @@ export class AbaOrcamento implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     descricao: ['', [Validators.required, Validators.maxLength(300)]],
-    valor: [0, [Validators.required, Validators.min(0.01)]],
+    valor: [0, [Validators.required, Validators.min(0.01), Validators.max(VALOR_MONETARIO_MAXIMO)]],
     tipo: ['Custo' as TipoLancamento, [Validators.required]],
     dataLancamento: [this.hoje, [Validators.required]],
   });

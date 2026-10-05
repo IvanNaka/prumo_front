@@ -36,7 +36,7 @@
         <label for="orcamento">Orçamento aprovado (R$) *</label>
         <input id="orcamento" type="number" min="0" step="0.01" formControlName="orcamentoAprovado" />
         @if (form.controls.orcamentoAprovado.invalid && form.controls.orcamentoAprovado.touched) {
-          <p class="field-error">Informe um valor maior ou igual a 0.</p>
+          <p class="field-error">Informe um valor entre 0 e R$ 1 trilhão.</p>
         }
       </div>
 
