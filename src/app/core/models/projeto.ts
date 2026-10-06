@@ -41,6 +41,15 @@ export interface ProjetoDetalhe extends ProjetoResumo {
   avaliacoes: NotaCriterio[];
   okrs: { id: string; titulo: string; progresso: number }[];
   dependencias: import('../services/dependencias.service').Dependencia[];
+  equipes: EquipeAlocada[];
+}
+
+/** Equipe alocada ao projeto (GET /projetos/{id}/equipes). */
+export interface EquipeAlocada {
+  id: string;
+  nome: string;
+  quantidadeMembros: number;
+  capacidadeMensalTotal: number;
 }
 
 export interface SalvarProjeto {

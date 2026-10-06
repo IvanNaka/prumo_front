@@ -41,4 +41,12 @@ export class ProjetosService {
   alterarStatus(id: string, acao: AcaoProjeto): Observable<ProjetoDetalhe> {
     return this.http.post<ProjetoDetalhe>(`${this.api}/projetos/${id}/status`, { acao });
   }
+
+  alocarEquipe(id: string, equipeId: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/projetos/${id}/equipes/${equipeId}`, null);
+  }
+
+  desalocarEquipe(id: string, equipeId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/projetos/${id}/equipes/${equipeId}`);
+  }
 }

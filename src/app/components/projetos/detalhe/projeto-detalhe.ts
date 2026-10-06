@@ -33,9 +33,10 @@ import { AbaOrcamento } from './aba-orcamento';
 import { AbaBusinessCase } from './aba-business-case';
 import { AbaDependencias } from './aba-dependencias';
 import { AbaIndicadores } from './aba-indicadores';
+import { AbaEquipes } from './aba-equipes';
 import { AuthService } from '../../../core/services/auth.service';
 
-export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'dependencias' | 'orcamento' | 'business-case' | 'indicadores';
+export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'equipes' | 'dependencias' | 'orcamento' | 'business-case' | 'indicadores';
 
 /** Detalhe do projeto (/projetos/{id}) — roteiro do Cap. 4, Parte 2. */
 @Component({
@@ -50,6 +51,7 @@ export type AbaProjeto = 'resumo' | 'avaliacao' | 'okrs' | 'dependencias' | 'orc
     AbaBusinessCase,
     AbaDependencias,
     AbaIndicadores,
+    AbaEquipes,
   ],
   templateUrl: './projeto-detalhe.html',
 })
