@@ -47,7 +47,8 @@
         </div>
         <div class="field">
           <label for="token">API token {{ i.tokenConfigurado ? '' : '*' }}</label>
-          <input id="token" type="password" autocomplete="new-password" formControlName="apiToken" />
+          <input id="token" type="password" autocomplete="new-password" formControlName="apiToken"
+            [placeholder]="i.tokenConfigurado ? '••••••••••••••••' : ''" />
           @if (i.tokenConfigurado) {
             <p class="field-help">Deixe em branco para manter o token atual.</p>
           }
