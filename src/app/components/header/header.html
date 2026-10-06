@@ -1,5 +1,17 @@
 <header class="app-header">
   <div class="header-left">
+    <button
+      type="button"
+      class="menu-toggle"
+      aria-label="Abrir menu"
+      aria-controls="menu-lateral"
+      [attr.aria-expanded]="menuAberto()"
+      (click)="alternarMenu.emit()"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"></path>
+      </svg>
+    </button>
     <h1 class="app-title">{{ title() }}</h1>
     @if (portfolioAtivo(); as p) {
       <div class="portfolio-ativo" title="Portfólio ativo">

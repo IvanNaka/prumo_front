@@ -1,8 +1,13 @@
-<aside class="app-sidebar">
+<aside class="app-sidebar" [class.aberto]="aberto()" id="menu-lateral">
   <div class="sidebar-brand">
     <div class="brand-icon">
       <img src="/assets/icons/prumo_logo_sb.svg" alt="Prumo" height="80" />
     </div>
+    <button type="button" class="sidebar-close" aria-label="Fechar menu" (click)="fechar.emit()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
   </div>
 
   <nav class="nav">

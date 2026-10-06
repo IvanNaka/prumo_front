@@ -23,58 +23,62 @@ import { TemPerfilDirective } from '../../../shared/tem-perfil.directive';
             <button type="button" class="btn btn-primary btn-sm" *temPerfil="permissoes.editarDependencias" (click)="formAberto.set(true)">Adicionar</button>
           }
         </div>
-        <table class="table">
-          <tbody>
-            @for (d of dependeDe(); track d.id) {
-              <tr>
-                <td>
-                  <a class="strong" [routerLink]="['/projetos', d.projetoDestinoId]">{{ d.projetoDestinoNome }}</a>
-                  <div><span [class]="badgeProjeto(d.projetoDestinoStatus)">{{ rotuloStatus[d.projetoDestinoStatus] }}</span></div>
-                </td>
-                <td>
-                  @if (d.emRisco) {
-                    <span class="badge badge-red" [title]="d.motivo">Em risco</span>
-                  }
-                </td>
-                <td class="actions">
-                  @if (editavel()) {
-                    <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarDependencias" (click)="excluir(d)">Remover</button>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="3" class="empty-state">Nenhuma dependência.</td></tr>
-            }
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="table">
+            <tbody>
+              @for (d of dependeDe(); track d.id) {
+                <tr>
+                  <td>
+                    <a class="strong" [routerLink]="['/projetos', d.projetoDestinoId]">{{ d.projetoDestinoNome }}</a>
+                    <div><span [class]="badgeProjeto(d.projetoDestinoStatus)">{{ rotuloStatus[d.projetoDestinoStatus] }}</span></div>
+                  </td>
+                  <td>
+                    @if (d.emRisco) {
+                      <span class="badge badge-red" [title]="d.motivo">Em risco</span>
+                    }
+                  </td>
+                  <td class="actions">
+                    @if (editavel()) {
+                      <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarDependencias" (click)="excluir(d)">Remover</button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="empty-state">Nenhuma dependência.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="card">
         <h2 class="card-title">Projetos que dependem deste</h2>
-        <table class="table">
-          <tbody>
-            @for (d of dependentes(); track d.id) {
-              <tr>
-                <td>
-                  <a class="strong" [routerLink]="['/projetos', d.projetoOrigemId]">{{ d.projetoOrigemNome }}</a>
-                  <div><span [class]="badgeProjeto(d.projetoOrigemStatus)">{{ rotuloStatus[d.projetoOrigemStatus] }}</span></div>
-                </td>
-                <td>
-                  @if (d.emRisco) {
-                    <span class="badge badge-red" [title]="d.motivo">Em risco</span>
-                  }
-                </td>
-                <td class="actions">
-                  @if (editavel()) {
-                    <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarDependencias" (click)="excluir(d)">Remover</button>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="3" class="empty-state">Nenhum projeto depende deste.</td></tr>
-            }
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="table">
+            <tbody>
+              @for (d of dependentes(); track d.id) {
+                <tr>
+                  <td>
+                    <a class="strong" [routerLink]="['/projetos', d.projetoOrigemId]">{{ d.projetoOrigemNome }}</a>
+                    <div><span [class]="badgeProjeto(d.projetoOrigemStatus)">{{ rotuloStatus[d.projetoOrigemStatus] }}</span></div>
+                  </td>
+                  <td>
+                    @if (d.emRisco) {
+                      <span class="badge badge-red" [title]="d.motivo">Em risco</span>
+                    }
+                  </td>
+                  <td class="actions">
+                    @if (editavel()) {
+                      <button type="button" class="btn btn-link btn-sm text-danger" *temPerfil="permissoes.editarDependencias" (click)="excluir(d)">Remover</button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="empty-state">Nenhum projeto depende deste.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 

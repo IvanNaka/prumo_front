@@ -135,7 +135,7 @@
             <h2 class="card-title">Membros do portfólio</h2>
             @if (!encerrado()) {
               <div class="row">
-                <select class="input" style="min-width: 260px" [value]="novoMembroId()" (change)="novoMembroId.set($any($event.target).value)">
+                <select class="input" style="min-width: min(260px, 100%)" [value]="novoMembroId()" (change)="novoMembroId.set($any($event.target).value)">
                   <option value="">Selecione um usuário</option>
                   @for (usuario of candidatos(); track usuario.id) {
                     <option [value]="usuario.id">{{ usuario.nome }} ({{ usuario.email }})</option>
