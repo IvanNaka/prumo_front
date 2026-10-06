@@ -3,7 +3,10 @@
     <div>
       <h1>Equipes</h1>
     </div>
-    <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarEquipes" (click)="novaEquipe()">Nova equipe</button>
+    <div class="row">
+      <button type="button" class="btn btn-secondary" (click)="abrirEntrar()">Entrar com código</button>
+      <button type="button" class="btn btn-primary" *temPerfil="permissoes.editarEquipes" (click)="novaEquipe()">Nova equipe</button>
+    </div>
   </header>
 
   @if (carregando()) {
@@ -91,6 +94,28 @@
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="formEquipeAberto.set(false)">Cancelar</button>
             <button type="submit" class="btn btn-primary" [disabled]="formEquipe.invalid">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (formEntrarAberto()) {
+    <div class="modal-overlay" (click)="formEntrarAberto.set(false)">
+      <div class="modal modal-sm" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="card-header">
+          <h2 class="card-title">Entrar em uma equipe</h2>
+          <button type="button" class="btn btn-link" (click)="formEntrarAberto.set(false)">Fechar</button>
+        </div>
+        <form class="form-grid" [formGroup]="formEntrar" (ngSubmit)="entrarNaEquipe()" novalidate>
+          <div class="field">
+            <label for="codigoConvite">Código de convite *</label>
+            <input id="codigoConvite" class="invite-code" formControlName="codigo" maxlength="8" autocomplete="off" placeholder="Ex.: K7M2QX9A" />
+            <p class="field-help">Peça o código a quem administra a equipe. Você continua nas equipes em que já está.</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="formEntrarAberto.set(false)">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formEntrar.invalid || entrando()">Entrar</button>
           </div>
         </form>
       </div>

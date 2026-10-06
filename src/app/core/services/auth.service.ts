@@ -40,7 +40,10 @@ export class AuthService {
       .pipe(tap((response) => this.salvarSessao(response)));
   }
 
-  /** POST /api/onboarding/entrar — entra na equipe pelo código de convite como Desenvolvedor (novo JWT). */
+  /**
+   * POST /api/onboarding/entrar — entra na equipe pelo código de convite (novo JWT). No primeiro
+   * acesso o usuário vira Desenvolvedor; quem já tem perfil entra em mais uma equipe e mantém o perfil.
+   */
   entrarNaEquipe(codigo: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/onboarding/entrar`, { codigo })
