@@ -12,9 +12,12 @@ import { Sidebar } from '../components/sidebar/sidebar';
   imports: [RouterOutlet, Sidebar, Header],
   template: `
     <div class="app-shell">
-      <app-sidebar></app-sidebar>
+      <app-sidebar [aberto]="menuAberto()" (fechar)="menuAberto.set(false)"></app-sidebar>
+      @if (menuAberto()) {
+        <div class="sidebar-backdrop" (click)="menuAberto.set(false)" aria-hidden="true"></div>
+      }
       <div class="app-content">
-        <app-header [title]="titulo()"></app-header>
+        <app-header [title]="titulo()" [menuAberto]="menuAberto()" (alternarMenu)="menuAberto.update((v) => !v)"></app-header>
         <main class="app-main">
           <router-outlet></router-outlet>
         </main>
@@ -30,6 +33,9 @@ export class Shell {
   /** Título vindo de `data: { titulo }` da rota ativa mais interna. */
   readonly titulo = signal('');
 
+  /** Menu lateral aberto como gaveta em telas pequenas. */
+  readonly menuAberto = signal(false);
+
   constructor() {
     // Depois de um F5, restaura o portfólio ativo guardado na sessão (UC3).
     const contexto = inject(PortfolioContextService);
@@ -41,7 +47,10 @@ export class Shell {
     this.atualizarTitulo();
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => this.atualizarTitulo());
+      .subscribe(() => {
+        this.atualizarTitulo();
+        this.menuAberto.set(false);
+      });
   }
 
   private atualizarTitulo(): void {

@@ -6,6 +6,7 @@
 	display: flex;
 	flex-direction: column;
 	position: fixed;
+	z-index: 45;
 }
 .sidebar-brand {
 	padding: 1.5rem 1.5rem;
@@ -59,3 +60,36 @@
 .profile-row { display:flex; gap:.75rem; align-items:center; padding:.5rem; border-radius:.5rem; color:#6B7280; }
 .profile-row:hover { background:#F8FAFC; cursor:pointer }
 .profile-label { font-size:.875rem; font-weight:500 }
+
+.sidebar-close {
+	display: none;
+	margin-left: auto;
+	width: 2.25rem;
+	height: 2.25rem;
+	border: none;
+	border-radius: .5rem;
+	background: transparent;
+	color: #475569;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+}
+.sidebar-close:hover { background: #F1F5F9 }
+
+@media (max-width: 960px) {
+	.app-sidebar {
+		width: min(17rem, 85vw);
+		height: 100dvh;
+		transform: translateX(-100%);
+		visibility: hidden;
+		transition: transform .2s ease-in-out, visibility .2s;
+		box-shadow: 0 20px 50px rgb(15 23 42 / 0.25);
+	}
+	.app-sidebar.aberto {
+		transform: translateX(0);
+		visibility: visible;
+	}
+	.sidebar-brand { padding: 1rem 1rem 1rem 1.25rem }
+	.sidebar-close { display: inline-flex }
+	.menu-item { padding: .75rem }
+}

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -26,6 +26,10 @@ export class Sidebar {
   private readonly contexto = inject(PortfolioContextService);
 
   readonly portfolioAtivo = this.contexto.ativo;
+
+  /** Em telas pequenas o menu vira uma gaveta controlada pelo layout. */
+  readonly aberto = input(false);
+  readonly fechar = output<void>();
 
   private readonly itensGerais: MenuItem[] = [
     { rota: '/portfolios', icon: 'portfolio', label: 'Portfólios', perfis: TODOS },

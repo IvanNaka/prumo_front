@@ -20,7 +20,7 @@ import { TemPerfilDirective } from './tem-perfil.directive';
         <h2 class="card-title">{{ titulo() }}</h2>
         @if (editavel()) {
           <div class="row" *temPerfil="permissoes.editarOkrs">
-            <select class="input" style="min-width: 240px" [value]="selecionado()" (change)="selecionado.set($any($event.target).value)">
+            <select class="input" style="min-width: min(240px, 100%)" [value]="selecionado()" (change)="selecionado.set($any($event.target).value)">
               <option value="">Selecione um OKR</option>
               @for (okr of disponiveis(); track okr.id) {
                 <option [value]="okr.id">{{ okr.titulo }}</option>

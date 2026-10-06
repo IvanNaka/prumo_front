@@ -123,3 +123,51 @@
 	line-height: 1.15rem;
 	text-align: center;
 }
+
+.menu-toggle {
+	display: none;
+	flex-shrink: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: none;
+	border-radius: .5rem;
+	background: transparent;
+	color: #1f2937;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+}
+.menu-toggle:hover { background: #F1F5F9; }
+
+.app-title {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 960px) {
+	.app-header {
+		position: sticky;
+		top: 0;
+		z-index: 30;
+		padding: 0 1rem;
+		gap: .5rem;
+	}
+	.header-left { gap: .5rem; }
+	.header-right { gap: .5rem; flex-shrink: 0; }
+	.menu-toggle { display: inline-flex; margin-left: -.5rem; }
+	.app-title { font-size: 1.05rem; }
+}
+
+@media (max-width: 640px) {
+	.portfolio-ativo-label,
+	.portfolio-trocar { display: none; }
+	.portfolio-ativo { max-width: 9rem; padding: .3rem .6rem; font-size: .8rem; }
+	.user-menu-panel { max-width: calc(100vw - 2rem); }
+	.user-info { min-width: 0; }
+	.user-info span { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 400px) {
+	.portfolio-ativo { display: none; }
+}

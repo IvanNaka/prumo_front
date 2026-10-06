@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { timer } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
@@ -20,6 +20,8 @@ export class Header {
   private readonly router = inject(Router);
 
   readonly title = input<string>('');
+  readonly menuAberto = input(false);
+  readonly alternarMenu = output<void>();
   readonly showUserMenu = signal(false);
   readonly usuario = this.authService.usuario;
   readonly portfolioAtivo = this.contexto.ativo;
