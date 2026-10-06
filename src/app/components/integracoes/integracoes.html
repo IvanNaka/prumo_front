@@ -2,9 +2,6 @@
   <header class="page-header">
     <div>
       <h1>Integração com o Jira</h1>
-      <p class="page-subtitle">
-        Informe a URL do Jira Cloud, o e-mail da conta e um API token. O token é armazenado criptografado e nunca é exibido.
-      </p>
     </div>
     @if (integracao(); as i) {
       <span [class]="badge(i.status)">{{ rotuloStatus[i.status] }}</span>
