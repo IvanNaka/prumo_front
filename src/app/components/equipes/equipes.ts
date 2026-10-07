@@ -6,6 +6,7 @@ import { CUSTO_HORA_MAXIMO } from '../../core/models/limites';
 import { PERMISSOES } from '../../core/models/permissoes';
 import { Portfolio } from '../../core/models/portfolio';
 import { mensagemDeErro } from '../../core/models/problem';
+import { AuthService } from '../../core/services/auth.service';
 import { Equipe, EquipesService, MembroEquipe } from '../../core/services/equipes.service';
 import { PortfoliosService } from '../../core/services/portfolios.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -25,6 +26,7 @@ export class Equipes {
   private readonly service = inject(EquipesService);
   private readonly portfoliosService = inject(PortfoliosService);
   private readonly usuariosService = inject(UsuariosService);
+  private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
@@ -39,10 +41,16 @@ export class Equipes {
   readonly formEquipeAberto = signal(false);
   readonly membroContexto = signal<{ equipe: Equipe; membro: MembroEquipe | null } | null>(null);
   readonly excluindo = signal<Equipe | null>(null);
+  readonly formEntrarAberto = signal(false);
+  readonly entrando = signal(false);
 
   readonly formEquipe = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(100)]],
     portfolioId: [''],
+  });
+
+  readonly formEntrar = this.fb.nonNullable.group({
+    codigo: ['', [Validators.required, Validators.maxLength(8)]],
   });
 
   readonly formMembro = this.fb.nonNullable.group({
@@ -116,7 +124,33 @@ export class Equipes {
     });
   }
 
-  /** Quem entra com o código vira Desenvolvedor e membro da equipe. */
+  abrirEntrar(): void {
+    this.formEntrar.reset({ codigo: '' });
+    this.formEntrarAberto.set(true);
+  }
+
+  /** Entra em mais uma equipe pelo código de convite; os perfis atuais são mantidos. */
+  entrarNaEquipe(): void {
+    if (this.formEntrar.invalid || this.entrando()) {
+      this.formEntrar.markAllAsTouched();
+      return;
+    }
+    this.entrando.set(true);
+    this.authService.entrarNaEquipe(this.formEntrar.getRawValue().codigo.trim()).subscribe({
+      next: () => {
+        this.entrando.set(false);
+        this.formEntrarAberto.set(false);
+        this.toast.sucesso('Você entrou na equipe.');
+        this.carregar();
+      },
+      error: (e) => {
+        this.entrando.set(false);
+        this.toast.erro(mensagemDeErro(e));
+      },
+    });
+  }
+
+  /** Quem entra com o código vira membro da equipe (no primeiro acesso, como Desenvolvedor). */
   copiarCodigo(equipe: Equipe): void {
     if (!equipe.codigoConvite) return;
     navigator.clipboard?.writeText(equipe.codigoConvite).then(
