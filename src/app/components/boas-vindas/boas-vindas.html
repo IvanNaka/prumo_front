@@ -9,7 +9,6 @@
     <div class="welcome-options">
       <form class="welcome-option" [formGroup]="formEntrar" (ngSubmit)="entrar()" novalidate>
         <h2>Entrar em uma equipe</h2>
-        <p class="field-help">Peça o código de convite ao responsável pela equipe.</p>
         <div class="field">
           <label for="codigo">Código de convite</label>
           <input id="codigo" formControlName="codigo" maxlength="8" autocomplete="off" class="code-input" placeholder="Ex.: K7M2QX9A" />
@@ -24,7 +23,6 @@
 
       <form class="welcome-option" [formGroup]="formCriar" (ngSubmit)="criar()" novalidate>
         <h2>Criar uma equipe</h2>
-        <p class="field-help">Você será o Tech Lead da equipe e poderá convidar outras pessoas.</p>
         <div class="field">
           <label for="nomeEquipe">Nome da equipe</label>
           <input id="nomeEquipe" formControlName="nome" maxlength="100" />
