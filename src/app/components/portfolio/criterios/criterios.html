@@ -17,8 +17,6 @@
     <div class="alert alert-warning">Portfólio encerrado — somente leitura</div>
   }
 
-  <div class="alert alert-info">Use o tipo Custo para critérios como Esforço e Risco.</div>
-
   @if (!carregando() && criterios().length > 0 && !somaCompleta()) {
     <div class="alert alert-warning">
       A soma dos pesos é {{ num(somaPesos()) }} e deve ser exatamente {{ somaMaxima }}.
@@ -129,7 +127,6 @@
                 </label>
               }
             </div>
-            <p class="field-help">Use o tipo Custo para critérios como Esforço e Risco.</p>
           </div>
 
           <div class="form-actions">
@@ -150,8 +147,6 @@
         </div>
 
         <div class="form-grid">
-          <p class="field-help">Distribua os pesos entre os critérios. A soma deve ser exatamente {{ somaMaxima }}.</p>
-
           @for (criterio of criterios(); track criterio.id) {
             <div class="field">
               <label [for]="'peso-' + criterio.id">{{ criterio.nome }}</label>

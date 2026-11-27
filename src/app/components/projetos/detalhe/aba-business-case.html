@@ -1,6 +1,6 @@
 @if (vpl(); as v) {
   @if (!v.disponivel) {
-    <div class="alert alert-info">{{ v.motivo || rn18 }} Cadastre o business case para calcular o VPL.</div>
+    <div class="alert alert-info">{{ v.motivo || rn18 }}</div>
   } @else {
     <div class="grid-4">
       <div class="card kpi">
@@ -54,7 +54,6 @@
       <button type="button" class="btn btn-secondary btn-sm" (click)="adicionarFluxo()">Adicionar mês</button>
     }
   </div>
-  <p class="field-help">Mês = meses após a data de início do projeto (1 a {{ mesMaximo }}). Valor = entrada de caixa prevista, maior ou igual a 0.</p>
   @if (fluxos.invalid && fluxos.touched) {
     <p class="field-error">Há fluxos inválidos: mês entre 1 e {{ mesMaximo }} e valor entre 0 e R$ 1 trilhão.</p>
   }
